@@ -8,6 +8,15 @@ interface VoiceInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 export default function VoiceInput({ onValueChange, className = '', value, ...props }: VoiceInputProps) {
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef<any>(null);
+  
+  // Keep track of the latest value and callback to avoid stale closures
+  const valueRef = useRef(value);
+  const onValueChangeRef = useRef(onValueChange);
+  
+  useEffect(() => {
+    valueRef.current = value;
+    onValueChangeRef.current = onValueChange;
+  }, [value, onValueChange]);
 
   useEffect(() => {
     // Check for browser support
@@ -16,13 +25,12 @@ export default function VoiceInput({ onValueChange, className = '', value, ...pr
       recognitionRef.current = new SpeechRecognition();
       recognitionRef.current.continuous = false;
       recognitionRef.current.interimResults = false;
-      // Using en-US or en-GB. Since user wanted UK date format, we'll use en-GB.
       recognitionRef.current.lang = 'en-GB'; 
 
       recognitionRef.current.onresult = (event: any) => {
         const transcript = event.results[0][0].transcript;
-        const currentVal = value ? value + ' ' : '';
-        onValueChange(currentVal + transcript);
+        const currentVal = valueRef.current ? valueRef.current + ' ' : '';
+        onValueChangeRef.current(currentVal + transcript);
         setIsListening(false);
       };
 
@@ -38,10 +46,12 @@ export default function VoiceInput({ onValueChange, className = '', value, ...pr
     
     return () => {
       if (recognitionRef.current) {
-        recognitionRef.current.abort();
+        try {
+          recognitionRef.current.abort();
+        } catch (e) {}
       }
     };
-  }, [onValueChange, value]);
+  }, []);
 
   const toggleListening = () => {
     if (isListening) {
