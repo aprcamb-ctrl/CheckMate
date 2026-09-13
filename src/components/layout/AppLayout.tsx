@@ -36,7 +36,7 @@ export default function AppLayout() {
   ];
 
   return (
-    <div className="flex flex-col h-[100dvh]">
+    <div className="flex flex-col min-h-screen">
       {/* Glass Header */}
       <header className="glass-header text-slate-800 p-4 sticky top-0 z-20 flex justify-between items-center">
         <div className="flex items-center gap-2">
@@ -84,7 +84,7 @@ export default function AppLayout() {
       </header>
 
       {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto p-4 pb-24 relative z-0">
+      <main className="flex-1 p-4 pb-24 relative z-0">
         <Outlet />
       </main>
 
