@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useStore } from '../store/useStore';
 import type { RecurringSchedule } from '../store/useStore';
 import { useState } from 'react';
+import VoiceInput from '../components/ui/VoiceInput';
 
 export default function TodoList() {
   const navigate = useNavigate();
@@ -60,13 +61,12 @@ export default function TodoList() {
             <h3 className="font-bold text-primary-700">New Job</h3>
             <button onClick={() => setIsAdding(false)}><X className="w-5 h-5 text-slate-400" /></button>
           </div>
-          <input 
-            type="text" 
+          <VoiceInput 
             autoFocus
             value={newTitle}
-            onChange={e => setNewTitle(e.target.value)}
+            onValueChange={setNewTitle}
             placeholder="e.g. Fix lobby lights" 
-            className="w-full p-2 rounded-lg border border-slate-200 focus:outline-none focus:border-primary-500 text-slate-800 bg-white"
+            className="p-2 rounded-lg border border-slate-200 focus:outline-none focus:border-primary-500 text-slate-800 bg-white"
           />
           <div className="flex items-center gap-2 mt-1">
             <input type="checkbox" id="reminderCheck" checked={reminder} onChange={e => setReminder(e.target.checked)} className="w-4 h-4 text-primary-600 rounded border-slate-300" />

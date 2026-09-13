@@ -1,6 +1,7 @@
 import { Plus, Search, Layers, X } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { useState, useMemo } from 'react';
+import VoiceInput from '../components/ui/VoiceInput';
 
 export default function Materials() {
   const { materials, addMaterial, updateMaterial, isDeletingMaterials, toggleDeletingMaterials, deleteMaterials } = useStore();
@@ -75,12 +76,11 @@ export default function Materials() {
       {/* Search Bar */}
       <div className="glass-panel p-2 flex items-center gap-3">
         <Search className="w-5 h-5 text-slate-400 ml-2" />
-        <input 
-          type="text" 
+        <VoiceInput 
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onValueChange={setSearch}
           placeholder="Search inventory..." 
-          className="bg-transparent border-none outline-none flex-1 py-1 text-slate-700 placeholder-slate-400"
+          className="bg-transparent border-none outline-none py-1 text-slate-700 placeholder-slate-400"
         />
       </div>
 
@@ -90,7 +90,7 @@ export default function Materials() {
             <h3 className="font-bold text-primary-700">{editingId ? 'Edit Material' : 'New Material'}</h3>
             <button onClick={() => setIsFormOpen(false)}><X className="w-5 h-5 text-slate-400" /></button>
           </div>
-          <input type="text" value={newName} onChange={e => setNewName(e.target.value)} placeholder="Material Name" className="w-full p-2 rounded-lg border border-slate-200 focus:outline-none focus:border-primary-500" />
+          <VoiceInput value={newName} onValueChange={setNewName} placeholder="Material Name" className="p-2 rounded-lg border border-slate-200 focus:outline-none focus:border-primary-500" />
           <div className="flex gap-2">
             <input type="text" value={newQty} onChange={e => setNewQty(e.target.value)} placeholder="Qty (e.g. 5 or 10m)" className="w-1/2 p-2 rounded-lg border border-slate-200 focus:outline-none focus:border-primary-500" />
             <input type="number" step="0.01" value={newPrice} onChange={e => setNewPrice(e.target.value)} placeholder="Price £" className="w-1/2 p-2 rounded-lg border border-slate-200 focus:outline-none focus:border-primary-500" />
