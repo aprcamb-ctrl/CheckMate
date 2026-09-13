@@ -1,13 +1,14 @@
 import { Calendar, Clock, PlayCircle, MoreVertical, Plus, X } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useStore } from '../store/useStore';
 import type { RecurringSchedule } from '../store/useStore';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import VoiceInput from '../components/ui/VoiceInput';
 
 export default function TodoList() {
   const navigate = useNavigate();
-  const { jobs, addJob, startJob, isDeletingJobs, toggleDeletingJobs, deleteJobs } = useStore();
+  const location = useLocation();
+  const { jobs, addJob, startJob, isDeletingJobs, toggleDeletingJobs, deleteJobs, equipment } = useStore();
   const [isAdding, setIsAdding] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [reminder, setReminder] = useState(false);
@@ -15,6 +16,16 @@ export default function TodoList() {
   const [recurring, setRecurring] = useState<RecurringSchedule>('NONE');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [search, setSearch] = useState('');
+  const [equipmentId, setEquipmentId] = useState<string>('');
+
+  useEffect(() => {
+    const state = location.state as any;
+    if (state?.prefillEquipmentId) {
+      setEquipmentId(state.prefillEquipmentId);
+      setIsAdding(true);
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
   
   const filteredJobs = useMemo(() => {
     if (!search.trim()) return jobs;
@@ -58,11 +69,12 @@ export default function TodoList() {
 
   const handleAdd = () => {
     if (newTitle.trim()) {
-      addJob(newTitle.trim(), reminder, reminder ? reminderDate : undefined, recurring);
+      addJob(newTitle.trim(), reminder, reminder ? reminderDate : undefined, recurring, equipmentId || undefined);
       setNewTitle('');
       setReminder(false);
       setReminderDate('');
       setRecurring('NONE');
+      setEquipmentId('');
       setIsAdding(false);
     }
   };
@@ -127,6 +139,19 @@ export default function TodoList() {
               <option value="WEEKLY">Weekly</option>
               <option value="MONTHLY">Monthly</option>
               <option value="ANNUALLY">Annually</option>
+            </select>
+          </div>
+          <div className="flex flex-col gap-1 mt-1">
+            <label className="text-sm font-medium text-slate-700">Assign to Asset (Optional)</label>
+            <select 
+              value={equipmentId}
+              onChange={e => setEquipmentId(e.target.value)}
+              className="w-full p-2 rounded-lg border border-slate-200 focus:outline-none focus:border-primary-500 text-slate-800 bg-white text-sm"
+            >
+              <option value="">None</option>
+              {equipment.map(e => (
+                <option key={e.id} value={e.id}>{e.name} ({e.id})</option>
+              ))}
             </select>
           </div>
           <button 

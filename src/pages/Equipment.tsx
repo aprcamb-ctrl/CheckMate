@@ -128,7 +128,7 @@ export default function Equipment() {
                 <label className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-2 block flex items-center justify-between">
                   Recent Jobs
                   <button onClick={() => {
-                    navigate('/todo');
+                    navigate('/todo', { state: { prefillEquipmentId: selectedEq.id } });
                   }} className="text-primary-600 normal-case text-xs">Add New</button>
                 </label>
                 <div className="space-y-2">
