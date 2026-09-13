@@ -1,4 +1,4 @@
-import { Camera, Search, X, CheckCircle, Circle, Trash2, Image as ImageIcon, Plus, Edit3 } from 'lucide-react';
+import { Camera, Search, X, CheckCircle, Circle, Trash2, Image as ImageIcon, Plus } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { useState, useMemo, useRef } from 'react';
 import VoiceInput from '../components/ui/VoiceInput';
@@ -176,9 +176,16 @@ export default function Receipts() {
 
       <div className="space-y-3">
         {filtered.map(receipt => (
-          <div key={receipt.id} className={`glass-panel p-4 flex gap-4 ${receipt.isPaid ? 'opacity-80' : ''}`}>
+          <div 
+            key={receipt.id} 
+            onClick={() => openEditForm(receipt)}
+            className={`glass-panel p-4 flex gap-4 cursor-pointer hover-lift ${receipt.isPaid ? 'opacity-80' : ''}`}
+          >
             <button 
-              onClick={() => toggleReceiptPaid(receipt.id)}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleReceiptPaid(receipt.id);
+              }}
               className="flex-shrink-0 mt-1 focus:outline-none tap-effect"
             >
               {receipt.isPaid ? (
@@ -200,7 +207,10 @@ export default function Receipts() {
                 </div>
                 
                 <button 
-                  onClick={() => setViewingPhoto(receipt.photoBase64)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setViewingPhoto(receipt.photoBase64);
+                  }}
                   className="bg-slate-100 p-2 rounded-xl text-slate-600 hover:bg-slate-200 tap-effect border border-slate-200"
                 >
                   <ImageIcon className="w-5 h-5" />
@@ -226,18 +236,13 @@ export default function Receipts() {
               </div>
             </div>
 
-            <div className="flex flex-col justify-between">
+            <div className="flex flex-col justify-end">
               <button 
-                onClick={() => openEditForm(receipt)}
-                className="text-indigo-400 hover:text-indigo-600 p-2 tap-effect"
-              >
-                <Edit3 className="w-4 h-4" />
-              </button>
-              <button 
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
                   if (window.confirm('Delete this receipt?')) deleteReceipt(receipt.id);
                 }}
-                className="text-red-400 hover:text-red-600 p-2 tap-effect"
+                className="text-red-400 hover:text-red-600 p-2 mt-auto tap-effect"
               >
                 <Trash2 className="w-4 h-4" />
               </button>
