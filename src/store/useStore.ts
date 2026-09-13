@@ -97,6 +97,7 @@ interface AppState {
   addEvent: (name: string, date?: string) => void;
   deleteEvent: (id: string) => void;
   addReceipt: (photoBase64: string, description: string, amount: number, jobId?: string) => void;
+  updateReceipt: (id: string, description: string, amount: number, jobId?: string) => void;
   toggleReceiptPaid: (id: string) => void;
   deleteReceipt: (id: string) => void;
   toggleDarkMode: () => void;
@@ -321,6 +322,10 @@ export const useStore = create<AppState>()(
           isPaid: false,
           createdAt: new Date().toISOString()
         }]
+      })),
+
+      updateReceipt: (id, description, amount, jobId) => set((state) => ({
+        receipts: state.receipts.map(r => r.id === id ? { ...r, description, amount, jobId } : r)
       })),
 
       toggleReceiptPaid: (id) => set((state) => ({

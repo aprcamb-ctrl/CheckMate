@@ -1,16 +1,17 @@
-import { Camera, Search, X, CheckCircle, Circle, Trash2, Image as ImageIcon, Plus } from 'lucide-react';
+import { Camera, Search, X, CheckCircle, Circle, Trash2, Image as ImageIcon, Plus, Edit3 } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { useState, useMemo, useRef } from 'react';
 import VoiceInput from '../components/ui/VoiceInput';
 
 export default function Receipts() {
-  const { receipts, addReceipt, toggleReceiptPaid, deleteReceipt, jobs } = useStore();
+  const { receipts, addReceipt, updateReceipt, toggleReceiptPaid, deleteReceipt, jobs } = useStore();
   const [search, setSearch] = useState('');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
   const [jobId, setJobId] = useState('');
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [editingReceiptId, setEditingReceiptId] = useState<string | null>(null);
   
   const [viewingPhoto, setViewingPhoto] = useState<string | null>(null);
   
@@ -34,15 +35,40 @@ export default function Receipts() {
 
   const handleSave = () => {
     if (description.trim() && photoPreview && amount) {
-      addReceipt(photoPreview, description.trim(), parseFloat(amount), jobId || undefined);
+      if (editingReceiptId) {
+        updateReceipt(editingReceiptId, description.trim(), parseFloat(amount), jobId || undefined);
+        // Optional: Update the photo if changed, but right now updateReceipt doesn't take photoBase64. 
+        // We'll just leave the photo as-is for edits.
+      } else {
+        addReceipt(photoPreview, description.trim(), parseFloat(amount), jobId || undefined);
+      }
       setIsFormOpen(false);
       setDescription('');
       setAmount('');
       setJobId('');
       setPhotoPreview(null);
+      setEditingReceiptId(null);
     } else {
       alert('Please provide a photo, description, and amount.');
     }
+  };
+
+  const openNewForm = () => {
+    setEditingReceiptId(null);
+    setDescription('');
+    setAmount('');
+    setJobId('');
+    setPhotoPreview(null);
+    setIsFormOpen(true);
+  };
+
+  const openEditForm = (r: any) => {
+    setEditingReceiptId(r.id);
+    setDescription(r.description);
+    setAmount(r.amount.toString());
+    setJobId(r.jobId || '');
+    setPhotoPreview(r.photoBase64);
+    setIsFormOpen(true);
   };
 
   return (
@@ -69,7 +95,7 @@ export default function Receipts() {
       {isFormOpen && (
         <div className="glass-panel p-4 flex flex-col gap-3 border-rose-400 border-2">
           <div className="flex justify-between items-center">
-            <h3 className="font-bold text-rose-700">Add New Receipt</h3>
+            <h3 className="font-bold text-rose-700">{editingReceiptId ? 'Edit Receipt' : 'Add New Receipt'}</h3>
             <button onClick={() => setIsFormOpen(false)}><X className="w-5 h-5 text-slate-400" /></button>
           </div>
           
@@ -85,12 +111,14 @@ export default function Receipts() {
             ) : (
               <div className="relative w-full h-48 rounded-xl overflow-hidden group">
                 <img src={photoPreview} alt="Receipt" className="w-full h-full object-cover" />
-                <button 
-                  onClick={() => setPhotoPreview(null)}
-                  className="absolute top-2 right-2 bg-black/50 text-white p-1.5 rounded-full hover:bg-black/70"
-                >
-                  <X className="w-4 h-4" />
-                </button>
+                {!editingReceiptId && (
+                  <button 
+                    onClick={() => setPhotoPreview(null)}
+                    className="absolute top-2 right-2 bg-black/50 text-white p-1.5 rounded-full hover:bg-black/70"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
               </div>
             )}
             <input 
@@ -198,12 +226,18 @@ export default function Receipts() {
               </div>
             </div>
 
-            <div className="flex flex-col justify-end">
+            <div className="flex flex-col justify-between">
+              <button 
+                onClick={() => openEditForm(receipt)}
+                className="text-indigo-400 hover:text-indigo-600 p-2 tap-effect"
+              >
+                <Edit3 className="w-4 h-4" />
+              </button>
               <button 
                 onClick={() => {
                   if (window.confirm('Delete this receipt?')) deleteReceipt(receipt.id);
                 }}
-                className="text-red-400 hover:text-red-600 p-2 mt-auto"
+                className="text-red-400 hover:text-red-600 p-2 tap-effect"
               >
                 <Trash2 className="w-4 h-4" />
               </button>
@@ -216,7 +250,7 @@ export default function Receipts() {
       </div>
 
       <button 
-        onClick={() => setIsFormOpen(true)}
+        onClick={openNewForm}
         className="fixed bottom-24 right-4 w-14 h-14 bg-gradient-to-br from-rose-500 to-rose-600 text-white rounded-full shadow-lg shadow-rose-500/40 flex items-center justify-center hover:scale-105 transition-all tap-effect z-20"
       >
         <Plus className="w-7 h-7" strokeWidth={2.5} />
