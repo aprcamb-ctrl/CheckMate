@@ -73,13 +73,21 @@ export default function TodoList() {
         <h2 className="text-2xl font-bold text-slate-800">Job List</h2>
       </div>
 
-      <div className="glass-panel p-2 flex items-center mb-6">
+      <div className="glass-panel p-2 flex items-center justify-between mb-6">
         <VoiceInput 
           value={search}
           onValueChange={setSearch}
           placeholder='Ask "When did I last fix..."' 
-          className="bg-transparent border-none outline-none py-1 text-slate-700 placeholder-slate-400"
+          className="bg-transparent border-none outline-none py-1 text-slate-700 placeholder-slate-400 flex-1"
         />
+        {search && (
+          <button 
+            onClick={() => setSearch('')}
+            className="p-2 text-slate-400 hover:text-slate-600 bg-slate-100 rounded-full tap-effect mr-1"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
       </div>
 
       {isAdding && (
