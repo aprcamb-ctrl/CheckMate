@@ -23,6 +23,7 @@ export interface Job {
   reminder?: boolean;
   reminderDate?: string;
   recurringSchedule?: RecurringSchedule;
+  equipmentId?: string;
 }
 
 export interface Material {
@@ -37,17 +38,24 @@ export interface MaterialUsage {
   quantity: number;
 }
 
-
+export interface Equipment {
+  id: string;
+  name: string;
+  location: string;
+  status: 'Operational' | 'Needs Repair' | 'Out of Service';
+  createdAt: string;
+}
 
 interface AppState {
   jobs: Job[];
   materials: Material[];
+  equipment: Equipment[];
   isDarkMode: boolean;
   isDeletingJobs: boolean;
   isDeletingMaterials: boolean;
   
   // Actions
-  addJob: (title: string, reminder?: boolean, reminderDate?: string, recurringSchedule?: RecurringSchedule) => void;
+  addJob: (title: string, reminder?: boolean, reminderDate?: string, recurringSchedule?: RecurringSchedule, equipmentId?: string) => void;
   updateJobStatus: (id: string, status: JobStatus) => void;
   startJob: (id: string) => void;
   pauseJob: (id: string) => void;
@@ -62,6 +70,9 @@ interface AppState {
   toggleDeletingMaterials: (value: boolean) => void;
   assignMaterialToJob: (jobId: string, materialId: string, quantity: number) => void;
   addPhotoToJob: (jobId: string, photoBase64: string, type: 'before' | 'after') => void;
+  addEquipment: (name: string, location: string) => void;
+  updateEquipmentStatus: (id: string, status: Equipment['status']) => void;
+  deleteEquipment: (id: string) => void;
   toggleDarkMode: () => void;
   injectTestData: () => void;
 }
@@ -80,10 +91,14 @@ export const useStore = create<AppState>()(
         { id: '1', name: 'Lightbulbs (LED 60W)', qty: 45, price: 4.50 },
         { id: '2', name: 'Air Filters (20x20x1)', qty: 12, price: 18.99 },
       ],
+      equipment: [
+        { id: 'EQ-1001', name: 'Main Lobby HVAC', location: 'Roof North', status: 'Operational', createdAt: new Date().toISOString() },
+        { id: 'EQ-1002', name: 'Pool Pump A', location: 'Basement', status: 'Needs Repair', createdAt: new Date().toISOString() },
+      ],
 
       toggleDarkMode: () => set((state) => ({ isDarkMode: !state.isDarkMode })),
 
-      addJob: (title, reminder, reminderDate, recurringSchedule) => set((state) => ({
+      addJob: (title, reminder, reminderDate, recurringSchedule, equipmentId) => set((state) => ({
         jobs: [
           ...state.jobs, 
           { 
@@ -97,7 +112,8 @@ export const useStore = create<AppState>()(
             createdAt: new Date().toISOString(),
             reminder,
             reminderDate,
-            recurringSchedule
+            recurringSchedule,
+            equipmentId
           }
         ]
       })),
@@ -160,7 +176,8 @@ export const useStore = create<AppState>()(
             createdAt: new Date().toISOString(),
             reminder: currentJob.reminder,
             reminderDate: nextDate.toISOString(),
-            recurringSchedule: currentJob.recurringSchedule
+            recurringSchedule: currentJob.recurringSchedule,
+            equipmentId: currentJob.equipmentId
           };
         }
 
@@ -241,6 +258,18 @@ export const useStore = create<AppState>()(
           }
           return { ...j, afterPhotos: [...(j.afterPhotos || []), photoBase64] };
         })
+      })),
+
+      addEquipment: (name, location) => set((state) => ({
+        equipment: [...state.equipment, { id: 'EQ-' + Math.floor(1000 + Math.random() * 9000), name, location, status: 'Operational', createdAt: new Date().toISOString() }]
+      })),
+
+      updateEquipmentStatus: (id, status) => set((state) => ({
+        equipment: state.equipment.map(e => e.id === id ? { ...e, status } : e)
+      })),
+
+      deleteEquipment: (id) => set((state) => ({
+        equipment: state.equipment.filter(e => e.id !== id)
       })),
 
       injectTestData: () => set((state) => {

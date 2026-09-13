@@ -1,5 +1,5 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { Home, ListTodo, Layers, Clock, Moon, Sun, Menu, Trash2, Database } from 'lucide-react';
+import { Home, ListTodo, Layers, Moon, Sun, Menu, Trash2, Database, QrCode, Wrench } from 'lucide-react';
 import clsx from 'clsx';
 import { useStore } from '../../store/useStore';
 import { useEffect, useState } from 'react';
@@ -31,8 +31,9 @@ export default function AppLayout() {
   const navItems = [
     { to: '/', icon: Home, label: 'Home' },
     { to: '/todo', icon: ListTodo, label: 'Jobs' },
-    { to: '/materials', icon: Layers, label: 'Materials' },
-    { to: '/timesheets', icon: Clock, label: 'Time' },
+    { to: '/scan', icon: QrCode, label: 'Scan' },
+    { to: '/materials', icon: Layers, label: 'Mats' },
+    { to: '/equipment', icon: Wrench, label: 'Equip' },
   ];
 
   return (
