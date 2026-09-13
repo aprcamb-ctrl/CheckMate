@@ -2,7 +2,7 @@ import { Calendar, Clock, PlayCircle, MoreVertical, Plus, X } from 'lucide-react
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../store/useStore';
 import type { RecurringSchedule } from '../store/useStore';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import VoiceInput from '../components/ui/VoiceInput';
 
 export default function TodoList() {
@@ -14,6 +14,25 @@ export default function TodoList() {
   const [reminderDate, setReminderDate] = useState('');
   const [recurring, setRecurring] = useState<RecurringSchedule>('NONE');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [search, setSearch] = useState('');
+  
+  const filteredJobs = useMemo(() => {
+    if (!search.trim()) return jobs;
+    
+    // Siri-style natural language parsing
+    const stopWords = ['when', 'did', 'i', 'last', 'change', 'fix', 'repair', 'do', 'the', 'a', 'an', 'show', 'me', 'find', 'what', 'where', 'is'];
+    const words = search.toLowerCase().split(/\s+/).filter(w => !stopWords.includes(w) && w.length > 1);
+    
+    if (words.length === 0) {
+      return jobs.filter(j => j.title.toLowerCase().includes(search.toLowerCase()));
+    }
+    
+    return jobs.filter(j => {
+      const title = j.title.toLowerCase();
+      // Match if at least one meaningful keyword is in the title
+      return words.some(w => title.includes(w));
+    });
+  }, [jobs, search]);
   
   const handleJobClick = (id: string) => {
     if (isDeletingJobs) {
@@ -50,9 +69,17 @@ export default function TodoList() {
 
   return (
     <div className="space-y-4 relative pb-20">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-bold text-slate-800">Job List</h2>
-        <button className="text-primary-600 font-medium text-sm">Filter</button>
+      </div>
+
+      <div className="glass-panel p-2 flex items-center mb-6">
+        <VoiceInput 
+          value={search}
+          onValueChange={setSearch}
+          placeholder='Ask "When did I last fix..."' 
+          className="bg-transparent border-none outline-none py-1 text-slate-700 placeholder-slate-400"
+        />
       </div>
 
       {isAdding && (
@@ -104,7 +131,7 @@ export default function TodoList() {
       )}
 
       <div className="space-y-3">
-        {jobs.map((job) => (
+        {filteredJobs.map((job) => (
           <div 
             key={job.id} 
             className={`glass-panel p-4 flex flex-col gap-3 hover-lift cursor-pointer relative overflow-hidden ${isDeletingJobs && selectedIds.includes(job.id) ? 'border-red-500 bg-red-50 dark:bg-red-900/20' : ''}`}
@@ -160,8 +187,8 @@ export default function TodoList() {
             )}
           </div>
         ))}
-        {jobs.length === 0 && !isAdding && (
-          <div className="text-center text-slate-400 py-10">No jobs yet. Tap + to add one.</div>
+        {filteredJobs.length === 0 && !isAdding && (
+          <div className="text-center text-slate-400 py-10">{search ? "No matches found." : "No jobs yet. Tap + to add one."}</div>
         )}
       </div>
 
