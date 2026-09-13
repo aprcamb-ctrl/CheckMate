@@ -1,4 +1,4 @@
-import { Clock, CheckCircle2, AlertCircle, Wrench, ChevronRight, Plus, Download } from 'lucide-react';
+import { Clock, Wrench, Plus, Download } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -7,8 +7,6 @@ export default function Dashboard() {
   const jobs = useStore(state => state.jobs);
   const navigate = useNavigate();
   
-  const completedJobs = useMemo(() => jobs.filter(j => j.status === 'COMPLETED'), [jobs]);
-  const activeJobs = useMemo(() => jobs.filter(j => j.status === 'IN_PROGRESS' || j.status === 'PAUSED'), [jobs]);
   const pendingJobs = useMemo(() => jobs.filter(j => j.status === 'PENDING'), [jobs]);
 
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);

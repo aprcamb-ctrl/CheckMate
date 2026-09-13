@@ -1,11 +1,11 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { Home, ListTodo, Layers, Clock, Moon, Sun, MoreVertical, Menu, Trash2, Database } from 'lucide-react';
+import { Home, ListTodo, Layers, Clock, Moon, Sun, Menu, Trash2, Database } from 'lucide-react';
 import clsx from 'clsx';
 import { useStore } from '../../store/useStore';
 import { useEffect, useState } from 'react';
 
 export default function AppLayout() {
-  const { isDarkMode, toggleDarkMode, toggleDeletingJobs, toggleDeletingMaterials, injectTestData, jobs } = useStore();
+  const { isDarkMode, toggleDarkMode, toggleDeletingJobs, toggleDeletingMaterials, injectTestData } = useStore();
   const [showMenu, setShowMenu] = useState(false);
   const navigate = useNavigate();
 
