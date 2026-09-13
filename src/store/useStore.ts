@@ -75,6 +75,7 @@ interface AppState {
   deleteEquipment: (id: string) => void;
   toggleDarkMode: () => void;
   injectTestData: () => void;
+  clearTestData: () => void;
 }
 
 export const useStore = create<AppState>()(
@@ -324,7 +325,11 @@ export const useStore = create<AppState>()(
         ];
         const cleanJobs = state.jobs.filter(j => !j.id.startsWith('test-'));
         return { jobs: [...cleanJobs, ...testJobs] };
-      })
+      }),
+      
+      clearTestData: () => set((state) => ({
+        jobs: state.jobs.filter(j => !j.id.startsWith('test-'))
+      }))
     }),
     {
       name: 'checkmate-storage', // name of the item in the storage (must be unique)

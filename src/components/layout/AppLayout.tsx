@@ -5,7 +5,7 @@ import { useStore } from '../../store/useStore';
 import { useEffect, useState } from 'react';
 
 export default function AppLayout() {
-  const { isDarkMode, toggleDarkMode, toggleDeletingJobs, toggleDeletingMaterials, injectTestData } = useStore();
+  const { isDarkMode, toggleDarkMode, toggleDeletingJobs, toggleDeletingMaterials, injectTestData, clearTestData } = useStore();
   const [showMenu, setShowMenu] = useState(false);
   const navigate = useNavigate();
 
@@ -72,9 +72,13 @@ export default function AppLayout() {
                     Delete Materials
                   </button>
                   <div className="h-px bg-slate-100 dark:bg-slate-700 my-2 mx-2"></div>
-                  <button onClick={() => { injectTestData(); setShowMenu(false); }} className="w-full flex items-center gap-3 px-4 py-3 text-sm text-blue-600 font-bold bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/40 rounded-xl transition-colors tap-effect">
+                  <button onClick={() => { injectTestData(); setShowMenu(false); }} className="w-full flex items-center gap-3 px-4 py-3 text-sm text-blue-600 font-bold bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/40 rounded-xl transition-colors mb-2 tap-effect">
                     <Database className="w-4 h-4" />
                     Load Test Data
+                  </button>
+                  <button onClick={() => { clearTestData(); setShowMenu(false); }} className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-600 font-bold bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/40 rounded-xl transition-colors tap-effect">
+                    <Trash2 className="w-4 h-4" />
+                    Clear Test Data
                   </button>
                 </div>
               </>
