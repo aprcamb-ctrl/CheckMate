@@ -1,4 +1,4 @@
-import { Clock, Plus, Download, Share } from 'lucide-react';
+import { Clock, Plus, Download, Share, QrCode, Wrench } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -92,6 +92,26 @@ export default function Dashboard() {
             <Clock strokeWidth={2.5} className="w-7 h-7" />
           </div>
           <span className="font-semibold text-[15px] tracking-wide">Timesheets</span>
+        </div>
+
+        <div 
+          onClick={() => navigate('/equipment')}
+          className="glass-panel p-5 flex flex-col items-center justify-center text-center hover-lift cursor-pointer group"
+        >
+          <div className="bg-gradient-to-br from-amber-400 to-orange-500 text-white p-3.5 rounded-2xl mb-4 shadow-lg group-hover:scale-110 transition-transform">
+            <Wrench strokeWidth={2.5} className="w-7 h-7" />
+          </div>
+          <span className="font-semibold text-[15px] tracking-wide">Equipment</span>
+        </div>
+        
+        <div 
+          onClick={() => navigate('/scan')}
+          className="glass-panel p-5 flex flex-col items-center justify-center text-center hover-lift cursor-pointer group"
+        >
+          <div className="bg-gradient-to-br from-purple-400 to-pink-500 text-white p-3.5 rounded-2xl mb-4 shadow-lg group-hover:scale-110 transition-transform">
+            <QrCode strokeWidth={2.5} className="w-7 h-7" />
+          </div>
+          <span className="font-semibold text-[15px] tracking-wide">Scan Asset</span>
         </div>
       </div>
     </div>
