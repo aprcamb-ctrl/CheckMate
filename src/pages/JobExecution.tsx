@@ -14,6 +14,7 @@ export default function JobExecution() {
   const [editHours, setEditHours] = useState('0');
   const [editMinutes, setEditMinutes] = useState('0');
   const [elapsed, setElapsed] = useState(0);
+  const [photoTab, setPhotoTab] = useState<'before'|'after'>('before');
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const handlePhotoCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -21,7 +22,7 @@ export default function JobExecution() {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        addPhotoToJob(job!.id, reader.result as string);
+        addPhotoToJob(job!.id, reader.result as string, photoTab);
       };
       reader.readAsDataURL(file);
     }
@@ -192,31 +193,45 @@ export default function JobExecution() {
           onChange={handlePhotoCapture} 
         />
         
-        <button 
-          onClick={() => fileInputRef.current?.click()}
-          className="w-full glass-panel p-4 flex items-center justify-between hover-lift tap-effect group"
-        >
-          <div className="flex items-center gap-4">
+        {/* Photos Section */}
+        <div className="glass-panel p-4 space-y-4">
+          <div className="flex items-center gap-4 mb-2">
             <div className="bg-gradient-to-br from-teal-400 to-emerald-500 text-white p-2.5 rounded-xl shadow-md">
               <ImageIcon className="w-5 h-5" />
             </div>
-            <span className="font-semibold text-slate-700">Attach Photos</span>
+            <span className="font-semibold text-slate-700">Photos</span>
           </div>
-          <span className="text-slate-400 text-sm font-medium">{job.photos?.length || 0} Photos</span>
-        </button>
-      </div>
-      
-      {/* Photo Gallery */}
-      {job.photos && job.photos.length > 0 && (
-        <div className="space-y-3 pt-2">
-          <h4 className="font-bold text-slate-800 text-lg px-1">Attached Photos</h4>
+          
+          <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl">
+            <button 
+              onClick={() => setPhotoTab('before')}
+              className={`flex-1 py-2 text-sm font-bold rounded-lg transition-colors ${photoTab === 'before' ? 'bg-white dark:bg-slate-700 text-slate-800 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
+            >
+              Before ({job.beforePhotos?.length || 0})
+            </button>
+            <button 
+              onClick={() => setPhotoTab('after')}
+              className={`flex-1 py-2 text-sm font-bold rounded-lg transition-colors ${photoTab === 'after' ? 'bg-white dark:bg-slate-700 text-slate-800 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'}`}
+            >
+              After ({job.afterPhotos?.length || 0})
+            </button>
+          </div>
+          
+          <button 
+            onClick={() => fileInputRef.current?.click()}
+            className="w-full py-3 border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl text-slate-500 font-semibold hover:border-primary-400 hover:text-primary-600 transition-colors flex items-center justify-center gap-2 tap-effect"
+          >
+            <Plus className="w-5 h-5" /> Add {photoTab === 'before' ? 'Before' : 'After'} Photo
+          </button>
+          
+          {/* Gallery */}
           <div className="grid grid-cols-3 gap-2">
-            {job.photos.map((photo, i) => (
-              <img key={i} src={photo} className="w-full h-24 object-cover rounded-xl border border-slate-200 shadow-sm" alt={`Job attachment ${i+1}`} />
+            {(photoTab === 'before' ? job.beforePhotos : job.afterPhotos)?.map((photo, i) => (
+              <img key={i} src={photo} className="w-full h-24 object-cover rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm" alt={`${photoTab} job attachment ${i+1}`} />
             ))}
           </div>
         </div>
-      )}
+      </div>
 
       {/* Materials Modal */}
       {showMaterialsModal && (

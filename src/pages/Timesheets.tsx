@@ -78,7 +78,11 @@ export default function Timesheets() {
         csv += `"${mat.name}","${m.quantity}","£${(mat.price || 0).toFixed(2)}","£${cost.toFixed(2)}"\n`;
       }
     });
-    csv += `Total Materials Cost,,,"£${totalCost.toFixed(2)}"\n`;
+    csv += `Total Materials Cost,,,"£${totalCost.toFixed(2)}"\n\n`;
+
+    csv += `Photos\n`;
+    csv += `Before Photos,${job.beforePhotos?.length || 0}\n`;
+    csv += `After Photos,${job.afterPhotos?.length || 0}\n`;
 
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement("a");
