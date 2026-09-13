@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Play, Pause, CheckCircle2, Image as ImageIcon, Layers, Plus, X, Edit3 } from 'lucide-react';
+import { ArrowLeft, Play, Pause, CheckCircle2, Image as ImageIcon, Layers, Plus, X, Edit3, Receipt } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { useState, useRef, useEffect } from 'react';
 
@@ -7,8 +7,9 @@ export default function JobExecution() {
   const { id } = useParams();
   const navigate = useNavigate();
   
-  const { jobs, materials, startJob, pauseJob, completeJob, assignMaterialToJob, addPhotoToJob, overrideJobTime } = useStore();
+  const { jobs, materials, receipts, startJob, pauseJob, completeJob, assignMaterialToJob, addPhotoToJob, overrideJobTime } = useStore();
   const job = jobs.find(j => j.id === id);
+  const jobReceipts = receipts.filter(r => r.jobId === id);
   const [showMaterialsModal, setShowMaterialsModal] = useState(false);
   const [showEditTime, setShowEditTime] = useState(false);
   const [editHours, setEditHours] = useState('0');
@@ -231,6 +232,39 @@ export default function JobExecution() {
             ))}
           </div>
         </div>
+
+        {/* Receipts Section */}
+        {jobReceipts.length > 0 && (
+          <div className="glass-panel p-4 space-y-3">
+            <div className="flex items-center gap-4 mb-2">
+              <div className="bg-gradient-to-br from-rose-400 to-red-500 text-white p-2.5 rounded-xl shadow-md">
+                <Receipt className="w-5 h-5" />
+              </div>
+              <span className="font-semibold text-slate-700">Receipts</span>
+            </div>
+            
+            <div className="space-y-2">
+              {jobReceipts.map(receipt => (
+                <div key={receipt.id} className="p-3 border border-slate-100 rounded-xl bg-white flex justify-between items-center">
+                  <div className="flex items-center gap-3">
+                    <img src={receipt.photoBase64} alt="Receipt Thumbnail" className="w-12 h-12 rounded-lg object-cover border border-slate-200" />
+                    <div>
+                      <div className="font-bold text-sm text-slate-800">{receipt.description}</div>
+                      <div className="text-xs font-medium text-rose-600 font-mono">£{receipt.amount.toFixed(2)}</div>
+                    </div>
+                  </div>
+                  <div>
+                    {receipt.isPaid ? (
+                      <span className="text-[10px] font-bold px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 uppercase tracking-wider">Paid</span>
+                    ) : (
+                      <span className="text-[10px] font-bold px-2 py-1 rounded-full bg-amber-100 text-amber-700 uppercase tracking-wider">Outstanding</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Materials Modal */}

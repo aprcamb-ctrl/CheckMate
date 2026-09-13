@@ -24,6 +24,7 @@ export interface Job {
   reminderDate?: string;
   recurringSchedule?: RecurringSchedule;
   equipmentId?: string;
+  eventId?: string;
 }
 
 export interface Material {
@@ -46,16 +47,36 @@ export interface Equipment {
   createdAt: string;
 }
 
+export interface Event {
+  id: string;
+  name: string;
+  date?: string;
+  createdAt: string;
+}
+
+export interface Receipt {
+  id: string;
+  jobId?: string;
+  photoBase64: string;
+  description: string;
+  amount: number;
+  isPaid: boolean;
+  paidAt?: string;
+  createdAt: string;
+}
+
 interface AppState {
   jobs: Job[];
   materials: Material[];
   equipment: Equipment[];
+  events: Event[];
+  receipts: Receipt[];
   isDarkMode: boolean;
   isDeletingJobs: boolean;
   isDeletingMaterials: boolean;
   
   // Actions
-  addJob: (title: string, reminder?: boolean, reminderDate?: string, recurringSchedule?: RecurringSchedule, equipmentId?: string) => void;
+  addJob: (title: string, reminder?: boolean, reminderDate?: string, recurringSchedule?: RecurringSchedule, equipmentId?: string, eventId?: string) => void;
   updateJobStatus: (id: string, status: JobStatus) => void;
   startJob: (id: string) => void;
   pauseJob: (id: string) => void;
@@ -73,6 +94,11 @@ interface AppState {
   addEquipment: (name: string, location: string) => void;
   updateEquipmentStatus: (id: string, status: Equipment['status']) => void;
   deleteEquipment: (id: string) => void;
+  addEvent: (name: string, date?: string) => void;
+  deleteEvent: (id: string) => void;
+  addReceipt: (photoBase64: string, description: string, amount: number, jobId?: string) => void;
+  toggleReceiptPaid: (id: string) => void;
+  deleteReceipt: (id: string) => void;
   toggleDarkMode: () => void;
   injectTestData: () => void;
   clearTestData: () => void;
@@ -96,10 +122,12 @@ export const useStore = create<AppState>()(
         { id: 'EQ-1001', name: 'Main Lobby HVAC', location: 'Roof North', status: 'Operational', createdAt: new Date().toISOString() },
         { id: 'EQ-1002', name: 'Pool Pump A', location: 'Basement', status: 'Needs Repair', createdAt: new Date().toISOString() },
       ],
+      events: [],
+      receipts: [],
 
       toggleDarkMode: () => set((state) => ({ isDarkMode: !state.isDarkMode })),
 
-      addJob: (title, reminder, reminderDate, recurringSchedule, equipmentId) => set((state) => ({
+      addJob: (title, reminder, reminderDate, recurringSchedule, equipmentId, eventId) => set((state) => ({
         jobs: [
           ...state.jobs, 
           { 
@@ -114,7 +142,8 @@ export const useStore = create<AppState>()(
             reminder,
             reminderDate,
             recurringSchedule,
-            equipmentId
+            equipmentId,
+            eventId
           }
         ]
       })),
@@ -178,7 +207,8 @@ export const useStore = create<AppState>()(
             reminder: currentJob.reminder,
             reminderDate: nextDate.toISOString(),
             recurringSchedule: currentJob.recurringSchedule,
-            equipmentId: currentJob.equipmentId
+            equipmentId: currentJob.equipmentId,
+            eventId: currentJob.eventId
           };
         }
 
@@ -271,6 +301,38 @@ export const useStore = create<AppState>()(
 
       deleteEquipment: (id) => set((state) => ({
         equipment: state.equipment.filter(e => e.id !== id)
+      })),
+
+      addEvent: (name, date) => set((state) => ({
+        events: [...state.events, { id: 'EV-' + Date.now(), name, date, createdAt: new Date().toISOString() }]
+      })),
+
+      deleteEvent: (id) => set((state) => ({
+        events: state.events.filter(e => e.id !== id)
+      })),
+
+      addReceipt: (photoBase64, description, amount, jobId) => set((state) => ({
+        receipts: [...state.receipts, {
+          id: 'RCPT-' + Date.now(),
+          jobId,
+          photoBase64,
+          description,
+          amount,
+          isPaid: false,
+          createdAt: new Date().toISOString()
+        }]
+      })),
+
+      toggleReceiptPaid: (id) => set((state) => ({
+        receipts: state.receipts.map(r => {
+          if (r.id !== id) return r;
+          const isPaid = !r.isPaid;
+          return { ...r, isPaid, paidAt: isPaid ? new Date().toISOString() : undefined };
+        })
+      })),
+
+      deleteReceipt: (id) => set((state) => ({
+        receipts: state.receipts.filter(r => r.id !== id)
       })),
 
       injectTestData: () => set((state) => {

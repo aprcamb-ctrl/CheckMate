@@ -7,6 +7,8 @@ import Timesheets from './pages/Timesheets';
 import JobExecution from './pages/JobExecution';
 import Equipment from './pages/Equipment';
 import Scanner from './pages/Scanner';
+import Events from './pages/Events';
+import Receipts from './pages/Receipts';
 
 function App() {
   return (
@@ -20,6 +22,8 @@ function App() {
           <Route path="job/:id" element={<JobExecution />} />
           <Route path="equipment" element={<Equipment />} />
           <Route path="scan" element={<Scanner />} />
+          <Route path="events" element={<Events />} />
+          <Route path="receipts" element={<Receipts />} />
         </Route>
       </Routes>
     </BrowserRouter>

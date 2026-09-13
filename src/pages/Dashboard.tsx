@@ -1,4 +1,4 @@
-import { Clock, Plus, Download, Share, QrCode, Wrench } from 'lucide-react';
+import { Clock, Plus, Download, Share, QrCode, Wrench, CalendarDays, Receipt } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -112,6 +112,26 @@ export default function Dashboard() {
             <QrCode strokeWidth={2.5} className="w-7 h-7" />
           </div>
           <span className="font-semibold text-[15px] tracking-wide">Scan Asset</span>
+        </div>
+
+        <div 
+          onClick={() => navigate('/events')}
+          className="glass-panel p-5 flex flex-col items-center justify-center text-center hover-lift cursor-pointer group"
+        >
+          <div className="bg-gradient-to-br from-indigo-400 to-violet-500 text-white p-3.5 rounded-2xl mb-4 shadow-lg group-hover:scale-110 transition-transform">
+            <CalendarDays strokeWidth={2.5} className="w-7 h-7" />
+          </div>
+          <span className="font-semibold text-[15px] tracking-wide">Events</span>
+        </div>
+
+        <div 
+          onClick={() => navigate('/receipts')}
+          className="glass-panel p-5 flex flex-col items-center justify-center text-center hover-lift cursor-pointer group"
+        >
+          <div className="bg-gradient-to-br from-rose-400 to-red-500 text-white p-3.5 rounded-2xl mb-4 shadow-lg group-hover:scale-110 transition-transform">
+            <Receipt strokeWidth={2.5} className="w-7 h-7" />
+          </div>
+          <span className="font-semibold text-[15px] tracking-wide">Receipts</span>
         </div>
       </div>
     </div>

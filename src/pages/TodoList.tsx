@@ -8,7 +8,7 @@ import VoiceInput from '../components/ui/VoiceInput';
 export default function TodoList() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { jobs, addJob, startJob, isDeletingJobs, toggleDeletingJobs, deleteJobs, equipment } = useStore();
+  const { jobs, addJob, startJob, isDeletingJobs, toggleDeletingJobs, deleteJobs, equipment, events } = useStore();
   const [isAdding, setIsAdding] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [reminder, setReminder] = useState(false);
@@ -17,6 +17,7 @@ export default function TodoList() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [search, setSearch] = useState('');
   const [equipmentId, setEquipmentId] = useState<string>('');
+  const [eventId, setEventId] = useState<string>('');
 
   useEffect(() => {
     const state = location.state as any;
@@ -25,20 +26,28 @@ export default function TodoList() {
       setIsAdding(true);
       window.history.replaceState({}, document.title);
     }
+    if (state?.prefillEventId) {
+      setEventId(state.prefillEventId);
+      setIsAdding(true);
+      window.history.replaceState({}, document.title);
+    }
   }, [location.state]);
   
   const filteredJobs = useMemo(() => {
-    if (!search.trim()) return jobs;
+    // Only show unassigned jobs in the main Todo list
+    const unassignedJobs = jobs.filter(j => !j.equipmentId && !j.eventId);
+
+    if (!search.trim()) return unassignedJobs;
     
     // Siri-style natural language parsing
     const stopWords = ['when', 'did', 'i', 'last', 'change', 'fix', 'repair', 'do', 'the', 'a', 'an', 'show', 'me', 'find', 'what', 'where', 'is'];
     const words = search.toLowerCase().split(/\s+/).filter(w => !stopWords.includes(w) && w.length > 1);
     
     if (words.length === 0) {
-      return jobs.filter(j => j.title.toLowerCase().includes(search.toLowerCase()));
+      return unassignedJobs.filter(j => j.title.toLowerCase().includes(search.toLowerCase()));
     }
     
-    return jobs.filter(j => {
+    return unassignedJobs.filter(j => {
       const title = j.title.toLowerCase();
       // Match if at least one meaningful keyword is in the title
       return words.some(w => title.includes(w));
@@ -69,12 +78,13 @@ export default function TodoList() {
 
   const handleAdd = () => {
     if (newTitle.trim()) {
-      addJob(newTitle.trim(), reminder, reminder ? reminderDate : undefined, recurring, equipmentId || undefined);
+      addJob(newTitle.trim(), reminder, reminder ? reminderDate : undefined, recurring, equipmentId || undefined, eventId || undefined);
       setNewTitle('');
       setReminder(false);
       setReminderDate('');
       setRecurring('NONE');
       setEquipmentId('');
+      setEventId('');
       setIsAdding(false);
     }
   };
@@ -151,6 +161,22 @@ export default function TodoList() {
               <option value="">None</option>
               {equipment.map(e => (
                 <option key={e.id} value={e.id}>{e.name} ({e.id})</option>
+              ))}
+            </select>
+          </div>
+          <div className="flex flex-col gap-1 mt-1">
+            <label className="text-sm font-medium text-slate-700">Assign to Event (Optional)</label>
+            <select 
+              value={eventId}
+              onChange={e => {
+                setEventId(e.target.value);
+                if (e.target.value) setEquipmentId(''); // mutually exclusive
+              }}
+              className="w-full p-2 rounded-lg border border-slate-200 focus:outline-none focus:border-primary-500 text-slate-800 bg-white text-sm"
+            >
+              <option value="">None</option>
+              {events.map(ev => (
+                <option key={ev.id} value={ev.id}>{ev.name}</option>
               ))}
             </select>
           </div>
