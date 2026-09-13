@@ -1,4 +1,4 @@
-import { Clock, Plus, Download } from 'lucide-react';
+import { Clock, Plus, Download, Share } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -10,13 +10,22 @@ export default function Dashboard() {
   const pendingJobs = useMemo(() => jobs.filter(j => j.status === 'PENDING'), [jobs]);
 
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [isIos, setIsIos] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
 
   useEffect(() => {
+    // Standard PWA Install Prompt
     const handler = (e: any) => {
       e.preventDefault();
       setDeferredPrompt(e);
     };
     window.addEventListener('beforeinstallprompt', handler);
+    
+    // iOS Detection
+    const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+    setIsIos(ios);
+    setIsStandalone(window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone);
+
     return () => window.removeEventListener('beforeinstallprompt', handler);
   }, []);
 
@@ -49,6 +58,18 @@ export default function Dashboard() {
             <Download className="w-4 h-4 inline-block mr-1" />
             Install
           </button>
+        </div>
+      )}
+
+      {/* iOS Safari Fallback */}
+      {isIos && !isStandalone && !deferredPrompt && (
+        <div className="bg-gradient-to-r from-slate-700 to-slate-800 rounded-3xl p-5 text-white shadow-lg">
+          <h3 className="font-bold flex items-center gap-2 mb-1">
+            Install CheckMate
+          </h3>
+          <p className="text-sm text-slate-300 leading-snug">
+            To install this app on your iPhone, tap the <Share className="w-4 h-4 inline-block mx-0.5 text-blue-400" /> Share button in Safari's bottom menu, then scroll down and tap <strong>"Add to Home Screen"</strong>.
+          </p>
         </div>
       )}
 
