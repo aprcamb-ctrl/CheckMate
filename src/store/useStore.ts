@@ -130,7 +130,7 @@ export const useStore = create<AppState>()(
         })
       })),
 
-      completeJob: (id) => set((state) => {
+      completeJob: (id) => set(() => {
         get().pauseJob(id);
         const currentJob = get().jobs.find(j => j.id === id);
         
@@ -150,7 +150,7 @@ export const useStore = create<AppState>()(
           newJob = {
             id: Date.now().toString() + Math.random().toString(36).substring(7),
             title: currentJob.title,
-            status: 'PENDING',
+            status: 'PENDING' as JobStatus,
             timeLogs: [],
             materialsUsed: [],
             photos: [],
@@ -167,7 +167,7 @@ export const useStore = create<AppState>()(
               if (j.id !== id) return j;
               return {
                 ...j,
-                status: 'COMPLETED',
+                status: 'COMPLETED' as JobStatus,
                 completedAt: new Date().toISOString()
               };
             }),

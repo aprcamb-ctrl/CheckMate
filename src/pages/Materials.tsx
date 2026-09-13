@@ -1,4 +1,4 @@
-import { Plus, Search, Layers, X, Edit2, Trash2 } from 'lucide-react';
+import { Plus, Search, Layers, X } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { useState, useMemo } from 'react';
 
