@@ -3,9 +3,11 @@ import { persist } from 'zustand/middleware';
 
 export type JobStatus = 'PENDING' | 'IN_PROGRESS' | 'PAUSED' | 'COMPLETED';
 
+export type RecurringSchedule = 'NONE' | 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'ANNUALLY';
+
 export interface TimeLog {
-  startedAt: string;
-  endedAt?: string;
+  startedAt: string; // ISO String
+  endedAt?: string;  // ISO String
 }
 
 export interface Job {
@@ -13,10 +15,13 @@ export interface Job {
   title: string;
   status: JobStatus;
   timeLogs: TimeLog[];
+  materialsUsed?: MaterialUsage[];
+  photos?: string[];
   createdAt: string;
   completedAt?: string;
   reminder?: boolean;
   reminderDate?: string;
+  recurringSchedule?: RecurringSchedule;
 }
 
 export interface Material {
@@ -31,18 +36,7 @@ export interface MaterialUsage {
   quantity: number;
 }
 
-export interface Job {
-  id: string;
-  title: string;
-  status: JobStatus;
-  timeLogs: TimeLog[];
-  materialsUsed?: MaterialUsage[];
-  photos?: string[];
-  createdAt: string;
-  completedAt?: string;
-  reminder?: boolean;
-  reminderDate?: string;
-}
+
 
 interface AppState {
   jobs: Job[];
@@ -52,7 +46,7 @@ interface AppState {
   isDeletingMaterials: boolean;
   
   // Actions
-  addJob: (title: string, reminder?: boolean, reminderDate?: string) => void;
+  addJob: (title: string, reminder?: boolean, reminderDate?: string, recurringSchedule?: RecurringSchedule) => void;
   updateJobStatus: (id: string, status: JobStatus) => void;
   startJob: (id: string) => void;
   pauseJob: (id: string) => void;
@@ -88,7 +82,7 @@ export const useStore = create<AppState>()(
 
       toggleDarkMode: () => set((state) => ({ isDarkMode: !state.isDarkMode })),
 
-      addJob: (title, reminder, reminderDate) => set((state) => ({
+      addJob: (title, reminder, reminderDate, recurringSchedule) => set((state) => ({
         jobs: [
           ...state.jobs, 
           { 
@@ -97,9 +91,11 @@ export const useStore = create<AppState>()(
             status: 'PENDING', 
             timeLogs: [], 
             materialsUsed: [],
+            photos: [],
             createdAt: new Date().toISOString(),
             reminder,
-            reminderDate
+            reminderDate,
+            recurringSchedule
           }
         ]
       })),
@@ -136,15 +132,47 @@ export const useStore = create<AppState>()(
 
       completeJob: (id) => set((state) => {
         get().pauseJob(id);
+        const currentJob = get().jobs.find(j => j.id === id);
+        
+        let newJob: Job | null = null;
+        if (currentJob && currentJob.recurringSchedule && currentJob.recurringSchedule !== 'NONE') {
+          let nextDate = new Date();
+          if (currentJob.recurringSchedule === 'DAILY') {
+            nextDate.setDate(nextDate.getDate() + 1);
+          } else if (currentJob.recurringSchedule === 'WEEKLY') {
+            nextDate.setDate(nextDate.getDate() + 7);
+          } else if (currentJob.recurringSchedule === 'MONTHLY') {
+            nextDate.setMonth(nextDate.getMonth() + 1);
+          } else if (currentJob.recurringSchedule === 'ANNUALLY') {
+            nextDate.setFullYear(nextDate.getFullYear() + 1);
+          }
+          
+          newJob = {
+            id: Date.now().toString() + Math.random().toString(36).substring(7),
+            title: currentJob.title,
+            status: 'PENDING',
+            timeLogs: [],
+            materialsUsed: [],
+            photos: [],
+            createdAt: new Date().toISOString(),
+            reminder: currentJob.reminder,
+            reminderDate: nextDate.toISOString(),
+            recurringSchedule: currentJob.recurringSchedule
+          };
+        }
+
         return {
-          jobs: get().jobs.map(j => {
-            if (j.id !== id) return j;
-            return {
-              ...j,
-              status: 'COMPLETED',
-              completedAt: new Date().toISOString()
-            };
-          })
+          jobs: [
+            ...get().jobs.map(j => {
+              if (j.id !== id) return j;
+              return {
+                ...j,
+                status: 'COMPLETED',
+                completedAt: new Date().toISOString()
+              };
+            }),
+            ...(newJob ? [newJob] : [])
+          ]
         };
       }),
 

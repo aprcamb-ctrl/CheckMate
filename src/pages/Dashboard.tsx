@@ -1,12 +1,35 @@
-import { Plus, Clock } from 'lucide-react';
+import { Clock, CheckCircle2, AlertCircle, Wrench, ChevronRight, Plus, Download } from 'lucide-react';
 import { useStore } from '../store/useStore';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 export default function Dashboard() {
   const jobs = useStore(state => state.jobs);
   const navigate = useNavigate();
   
-  const pendingJobs = jobs.filter(j => j.status === 'PENDING' || j.status === 'IN_PROGRESS');
+  const completedJobs = useMemo(() => jobs.filter(j => j.status === 'COMPLETED'), [jobs]);
+  const activeJobs = useMemo(() => jobs.filter(j => j.status === 'IN_PROGRESS' || j.status === 'PAUSED'), [jobs]);
+  const pendingJobs = useMemo(() => jobs.filter(j => j.status === 'PENDING'), [jobs]);
+
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+
+  useEffect(() => {
+    const handler = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setDeferredPrompt(null);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -17,6 +40,19 @@ export default function Dashboard() {
         <h2 className="text-3xl font-bold mb-2 tracking-tight">Overview</h2>
         <p className="text-slate-500 font-medium text-lg">You have <span className="text-primary-600 font-bold">{pendingJobs.length} jobs</span> pending today.</p>
       </div>
+
+      {deferredPrompt && (
+        <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-3xl p-5 text-white shadow-lg flex items-center justify-between">
+          <div>
+            <h3 className="font-bold">Install App</h3>
+            <p className="text-sm text-blue-100">Add CheckMate to your home screen for offline access</p>
+          </div>
+          <button onClick={handleInstallClick} className="bg-white text-indigo-600 px-4 py-2 rounded-xl font-bold text-sm shadow-sm hover:bg-slate-50 active:scale-95 transition-all">
+            <Download className="w-4 h-4 inline-block mr-1" />
+            Install
+          </button>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-4">
         <div 

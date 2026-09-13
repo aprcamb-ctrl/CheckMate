@@ -1,6 +1,7 @@
 import { Calendar, Clock, PlayCircle, MoreVertical, Plus, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../store/useStore';
+import type { RecurringSchedule } from '../store/useStore';
 import { useState } from 'react';
 
 export default function TodoList() {
@@ -10,6 +11,7 @@ export default function TodoList() {
   const [newTitle, setNewTitle] = useState('');
   const [reminder, setReminder] = useState(false);
   const [reminderDate, setReminderDate] = useState('');
+  const [recurring, setRecurring] = useState<RecurringSchedule>('NONE');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   
   const handleJobClick = (id: string) => {
@@ -36,10 +38,11 @@ export default function TodoList() {
 
   const handleAdd = () => {
     if (newTitle.trim()) {
-      addJob(newTitle.trim(), reminder, reminder ? reminderDate : undefined);
+      addJob(newTitle.trim(), reminder, reminder ? reminderDate : undefined, recurring);
       setNewTitle('');
       setReminder(false);
       setReminderDate('');
+      setRecurring('NONE');
       setIsAdding(false);
     }
   };
@@ -77,6 +80,20 @@ export default function TodoList() {
               className="w-full p-2 rounded-lg border border-slate-200 focus:outline-none focus:border-primary-500 text-slate-800 bg-white text-sm"
             />
           )}
+          <div className="flex flex-col gap-1 mt-1">
+            <label className="text-sm font-medium text-slate-700">Recurring Schedule</label>
+            <select 
+              value={recurring}
+              onChange={e => setRecurring(e.target.value as RecurringSchedule)}
+              className="w-full p-2 rounded-lg border border-slate-200 focus:outline-none focus:border-primary-500 text-slate-800 bg-white text-sm"
+            >
+              <option value="NONE">None (One-off Job)</option>
+              <option value="DAILY">Daily</option>
+              <option value="WEEKLY">Weekly</option>
+              <option value="MONTHLY">Monthly</option>
+              <option value="ANNUALLY">Annually</option>
+            </select>
+          </div>
           <button 
             onClick={handleAdd}
             className="w-full bg-primary-600 text-white font-bold py-2 rounded-lg hover:bg-primary-700"
