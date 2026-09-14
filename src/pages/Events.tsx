@@ -33,7 +33,7 @@ export default function Events() {
   }, [selectedEvent, jobs]);
 
   return (
-    <div className="space-y-6 pb-20 relative">
+    <div className="space-y-6 relative pb-20 animate-fade-in-up">
       <div className="flex justify-between items-center mb-2">
         <h2 className="text-3xl font-bold tracking-tight text-slate-800">Events</h2>
       </div>

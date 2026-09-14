@@ -39,7 +39,8 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-24 relative animate-fade-in-up">
+      {/* Header Profile Section */}
       <div className="glass-panel p-6 relative overflow-hidden">
         <div className="absolute -top-10 -right-10 w-32 h-32 bg-primary-400 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse"></div>
         <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-indigo-400 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse" style={{ animationDelay: '2s' }}></div>

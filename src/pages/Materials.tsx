@@ -84,17 +84,17 @@ export default function Materials() {
   };
 
   return (
-    <div className="space-y-6 pb-20 relative">
+    <div className="space-y-6 relative pb-20 animate-fade-in-up">
       <div className="flex justify-between items-center mb-2">
         <h2 className="text-3xl font-bold tracking-tight text-slate-800">Materials</h2>
       </div>
 
-      <div className="glass-panel p-1.5 flex gap-1 bg-white/40">
+      <div className="filter-btn-container">
         {(['All', 'Purchased', 'Pending'] as const).map((tab) => (
           <button 
             key={tab}
             onClick={() => setFilter(tab)}
-            className={`flex-1 py-2 text-sm font-semibold rounded-2xl transition-all ${filter === tab ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'}`}
+            className={`filter-btn ${filter === tab ? 'filter-btn-active' : ''}`}
           >
             {tab}
           </button>

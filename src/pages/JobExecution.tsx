@@ -97,7 +97,7 @@ export default function JobExecution() {
   };
   
   return (
-    <div className="space-y-6 pb-20 relative">
+    <div className="space-y-6 pb-20 relative animate-fade-in-up">
       {/* Header */}
       <div className="flex items-center gap-4 mb-2">
         <button 
@@ -126,9 +126,9 @@ export default function JobExecution() {
         <div className="flex flex-col items-center justify-center py-6">
           <div 
             onClick={openEditTime}
-            className="flex items-center justify-center gap-3 cursor-pointer group tap-effect"
+            className={`flex items-center justify-center gap-3 cursor-pointer group tap-effect ${isRunning ? 'text-primary-600 animate-pulse-soft' : 'text-slate-700'}`}
           >
-            <span className="text-5xl font-light tracking-widest text-slate-700 font-mono">
+            <span className="text-5xl font-light tracking-widest font-mono">
               {formatTime(elapsed)}
             </span>
             <div className="bg-slate-100 p-2 rounded-full text-slate-500 dark:bg-slate-800 dark:text-slate-300 shadow-sm transition-colors">
