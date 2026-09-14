@@ -70,7 +70,7 @@ export default function TodoList() {
         return false;
       });
     });
-  }, [jobs, search]);
+  }, [jobs, search, filter]);
   
   const handleJobClick = (id: string) => {
     if (isDeletingJobs) {
