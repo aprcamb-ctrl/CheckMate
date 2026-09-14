@@ -1,4 +1,4 @@
-import { Clock, Plus, Download, Share, QrCode, Wrench, CalendarDays, ReceiptPoundSterling } from 'lucide-react';
+import { Clock, Plus, Download, Share, QrCode, Wrench, CalendarDays, ReceiptPoundSterling, Database, DownloadCloud, UploadCloud } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -36,6 +36,43 @@ export default function Dashboard() {
     if (outcome === 'accepted') {
       setDeferredPrompt(null);
     }
+  };
+
+  const exportData = () => {
+    const data = localStorage.getItem('checkmate-storage');
+    if (!data) return alert("No data found to backup!");
+    
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `checkmate-backup-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const importData = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const result = event.target?.result as string;
+        JSON.parse(result); // Validate JSON
+        if (window.confirm("Are you sure you want to restore from this backup? This will overwrite ALL your current data!")) {
+          localStorage.setItem('checkmate-storage', result);
+          alert("Backup restored successfully! The app will now reload.");
+          window.location.reload();
+        }
+      } catch (err) {
+        alert("Invalid backup file. Restoration failed.");
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
   };
 
   return (
@@ -133,6 +170,29 @@ export default function Dashboard() {
             <ReceiptPoundSterling strokeWidth={2.5} className="w-7 h-7" />
           </div>
           <span className="font-semibold text-[15px] tracking-wide">Receipts</span>
+        </div>
+      </div>
+
+      {/* Backup and Restore */}
+      <div className="mt-8 space-y-4 pt-4 border-t border-slate-200 dark:border-slate-800">
+        <h3 className="font-bold text-slate-800 px-2 flex items-center gap-2">
+          <Database className="w-5 h-5 text-primary-500" />
+          Data Backup & Restore
+        </h3>
+        <div className="grid grid-cols-2 gap-4">
+          <button 
+            onClick={exportData}
+            className="glass-panel p-4 flex flex-col items-center justify-center text-center hover-lift cursor-pointer tap-effect text-slate-600 hover:text-primary-600"
+          >
+            <DownloadCloud className="w-6 h-6 mb-2" />
+            <span className="font-bold text-sm">Backup Data</span>
+          </button>
+          
+          <label className="glass-panel p-4 flex flex-col items-center justify-center text-center hover-lift cursor-pointer tap-effect text-slate-600 hover:text-emerald-600">
+            <UploadCloud className="w-6 h-6 mb-2" />
+            <span className="font-bold text-sm">Restore Data</span>
+            <input type="file" accept=".json" className="hidden" onChange={importData} />
+          </label>
         </div>
       </div>
     </div>
