@@ -1,5 +1,5 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { Home, ListTodo, Layers, Clock, Moon, Sun, Menu, Trash2, Database } from 'lucide-react';
+import { Home, ListTodo, Layers, Clock, Moon, Sun, Menu, Trash2, Database, DownloadCloud, UploadCloud } from 'lucide-react';
 import clsx from 'clsx';
 import { useStore } from '../../store/useStore';
 import { useEffect, useState } from 'react';
@@ -26,6 +26,45 @@ export default function AppLayout() {
       toggleDeletingMaterials(true);
       navigate('/materials');
     }
+  };
+
+  const exportData = () => {
+    setShowMenu(false);
+    const data = localStorage.getItem('checkmate-storage');
+    if (!data) return alert("No data found to backup!");
+    
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `checkmate-backup-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const importData = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setShowMenu(false);
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const result = event.target?.result as string;
+        JSON.parse(result); // Validate JSON
+        if (window.confirm("Are you sure you want to restore from this backup? This will overwrite ALL your current data!")) {
+          localStorage.setItem('checkmate-storage', result);
+          alert("Backup restored successfully! The app will now reload.");
+          window.location.reload();
+        }
+      } catch (err) {
+        alert("Invalid backup file. Restoration failed.");
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
   };
 
   const navItems = [
@@ -71,6 +110,18 @@ export default function AppLayout() {
                     <Trash2 className="w-4 h-4" />
                     Delete Materials
                   </button>
+                  <div className="h-px bg-slate-100 dark:bg-slate-700 my-2 mx-2"></div>
+                  
+                  <button onClick={exportData} className="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-xl transition-colors mb-1 tap-effect">
+                    <DownloadCloud className="w-4 h-4 text-primary-500" />
+                    Backup Data
+                  </button>
+                  <label className="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-xl transition-colors tap-effect cursor-pointer mb-2">
+                    <UploadCloud className="w-4 h-4 text-emerald-500" />
+                    Restore Data
+                    <input type="file" accept=".json" className="hidden" onChange={importData} />
+                  </label>
+                  
                   <div className="h-px bg-slate-100 dark:bg-slate-700 my-2 mx-2"></div>
                   <button onClick={() => { injectTestData(); setShowMenu(false); }} className="w-full flex items-center gap-3 px-4 py-3 text-sm text-blue-600 font-bold bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/40 rounded-xl transition-colors mb-2 tap-effect">
                     <Database className="w-4 h-4" />
