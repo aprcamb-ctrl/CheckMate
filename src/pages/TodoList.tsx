@@ -16,7 +16,7 @@ export default function TodoList() {
   const [recurring, setRecurring] = useState<RecurringSchedule>('NONE');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [search, setSearch] = useState('');
-  const [filter, setFilter] = useState<'All' | 'Completed' | 'Pending'>('All');
+  const [filter, setFilter] = useState<'All' | 'Completed' | 'ToDo'>('All');
   const [equipmentId, setEquipmentId] = useState<string>('');
   const [eventId, setEventId] = useState<string>('');
 
@@ -40,8 +40,8 @@ export default function TodoList() {
 
     if (filter === 'Completed') {
       unassignedJobs = unassignedJobs.filter(j => j.status === 'COMPLETED');
-    } else if (filter === 'Pending') {
-      unassignedJobs = unassignedJobs.filter(j => j.status === 'PENDING' || j.status === 'PAUSED');
+    } else if (filter === 'ToDo') {
+      unassignedJobs = unassignedJobs.filter(j => j.status !== 'COMPLETED');
     }
 
     // Sort by status (pending first, then completed)
@@ -66,7 +66,7 @@ export default function TodoList() {
       return words.some(w => {
         if (title.includes(w)) return true;
         if (w === 'completed' && j.status === 'COMPLETED') return true;
-        if ((w === 'pending' || w === 'paused') && j.status !== 'COMPLETED') return true;
+        if ((w === 'pending' || w === 'paused' || w === 'todo') && j.status !== 'COMPLETED') return true;
         return false;
       });
     });
@@ -114,7 +114,7 @@ export default function TodoList() {
       </div>
 
       <div className="glass-panel p-1.5 flex gap-1 bg-white/40">
-        {(['All', 'Completed', 'Pending'] as const).map((tab) => (
+        {(['All', 'Completed', 'ToDo'] as const).map((tab) => (
           <button 
             key={tab}
             onClick={() => setFilter(tab)}
@@ -233,7 +233,7 @@ export default function TodoList() {
             }`}></div>
             
             <div className="flex justify-between items-start">
-              <h3 className="font-semibold text-slate-800 text-lg leading-tight pr-4">{job.title}</h3>
+              <h3 className={`font-semibold text-lg leading-tight pr-4 ${job.status === 'COMPLETED' ? 'line-through text-slate-400' : 'text-slate-800'}`}>{job.title}</h3>
               {isDeletingJobs ? (
                 <div className={`w-5 h-5 rounded border flex-shrink-0 flex items-center justify-center ${selectedIds.includes(job.id) ? 'bg-red-500 border-red-500' : 'border-slate-300'}`}>
                   {selectedIds.includes(job.id) && <X className="w-4 h-4 text-white" />}
