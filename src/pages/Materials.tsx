@@ -17,13 +17,22 @@ export default function Materials() {
   const [newPrice, setNewPrice] = useState('');
 
   const filteredMaterials = useMemo(() => {
-    let filtered = materials.filter(m => m.name.toLowerCase().includes(search.toLowerCase()));
+    let filtered = materials;
     if (filter === 'Purchased') {
       filtered = filtered.filter(m => m.isPurchased);
     } else if (filter === 'Pending') {
       filtered = filtered.filter(m => !m.isPurchased);
     }
-    return filtered;
+    
+    if (!search.trim()) return filtered;
+    
+    return filtered.filter(m => {
+      const s = search.toLowerCase().trim();
+      if (m.name.toLowerCase().includes(s)) return true;
+      if (s === 'purchased' && m.isPurchased) return true;
+      if (s === 'pending' && !m.isPurchased) return true;
+      return false;
+    });
   }, [materials, search, filter]);
 
   const handleOpenForm = (mat?: any) => {

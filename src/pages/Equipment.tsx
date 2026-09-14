@@ -31,7 +31,15 @@ export default function Equipment() {
     if (filter === 'Operational') list = list.filter(e => e.status === 'Operational');
     else if (filter === 'Repair') list = list.filter(e => e.status !== 'Operational');
     
-    return list.filter(e => e.name.toLowerCase().includes(search.toLowerCase()) || e.id.toLowerCase().includes(search.toLowerCase()));
+    if (!search.trim()) return list;
+
+    return list.filter(e => {
+      const s = search.toLowerCase().trim();
+      if (e.name.toLowerCase().includes(s) || e.id.toLowerCase().includes(s)) return true;
+      if (s === 'operational' && e.status === 'Operational') return true;
+      if ((s === 'repair' || s === 'broken' || s === 'needs repair') && e.status !== 'Operational') return true;
+      return false;
+    });
   }, [equipment, search, filter]);
 
   const handleSave = () => {

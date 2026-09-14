@@ -63,8 +63,12 @@ export default function TodoList() {
     
     return unassignedJobs.filter(j => {
       const title = j.title.toLowerCase();
-      // Match if at least one meaningful keyword is in the title
-      return words.some(w => title.includes(w));
+      return words.some(w => {
+        if (title.includes(w)) return true;
+        if (w === 'completed' && j.status === 'COMPLETED') return true;
+        if ((w === 'pending' || w === 'paused') && j.status !== 'COMPLETED') return true;
+        return false;
+      });
     });
   }, [jobs, search]);
   

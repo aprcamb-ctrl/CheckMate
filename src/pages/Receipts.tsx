@@ -23,8 +23,17 @@ export default function Receipts() {
     if (filter === 'Paid') list = list.filter(r => r.isPaid);
     else if (filter === 'Outstanding') list = list.filter(r => !r.isPaid);
     
-    return list.filter(r => r.description.toLowerCase().includes(search.toLowerCase()) || r.id.toLowerCase().includes(search.toLowerCase()))
-      .sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    if (search.trim()) {
+      list = list.filter(r => {
+        const s = search.toLowerCase().trim();
+        if (r.description.toLowerCase().includes(s) || r.id.toLowerCase().includes(s)) return true;
+        if (s === 'paid' && r.isPaid) return true;
+        if (s === 'outstanding' && !r.isPaid) return true;
+        return false;
+      });
+    }
+
+    return list.sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }, [receipts, search, filter]);
 
   const handlePhotoCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
