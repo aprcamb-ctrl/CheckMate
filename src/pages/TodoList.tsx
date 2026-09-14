@@ -41,7 +41,7 @@ export default function TodoList() {
     if (filter === 'Completed') {
       unassignedJobs = unassignedJobs.filter(j => j.status === 'COMPLETED');
     } else if (filter === 'Pending') {
-      unassignedJobs = unassignedJobs.filter(j => j.status !== 'COMPLETED');
+      unassignedJobs = unassignedJobs.filter(j => j.status === 'PENDING' || j.status === 'PAUSED');
     }
 
     // Sort by status (pending first, then completed)
