@@ -42,6 +42,12 @@ export default function Events() {
       <div className="sticky top-0 z-10 -mx-4 -mt-4 p-4 pb-4 bg-slate-50/95 dark:bg-slate-900/95 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-700/50 mb-4 shadow-sm">
         <div className="flex justify-between items-center mb-3">
           <h2 className="text-3xl font-bold tracking-tight text-slate-800">Events</h2>
+          <button 
+            onClick={() => setIsFormOpen(true)}
+            className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-indigo-600 text-white rounded-full shadow-md flex items-center justify-center hover:scale-105 transition-transform tap-effect"
+          >
+            <Plus strokeWidth={2.5} className="w-6 h-6" />
+          </button>
         </div>
 
         <div className="filter-btn-container mb-3">
@@ -200,12 +206,6 @@ export default function Events() {
         )}
       </div>
 
-      <button 
-        onClick={() => setIsFormOpen(true)}
-        className="fixed bottom-20 right-4 w-14 h-14 bg-gradient-to-br from-indigo-500 to-indigo-600 text-white rounded-full shadow-lg shadow-indigo-500/40 flex items-center justify-center hover:scale-105 transition-all tap-effect z-20"
-      >
-        <Plus className="w-7 h-7" strokeWidth={2.5} />
-      </button>
     </div>
   );
 }
