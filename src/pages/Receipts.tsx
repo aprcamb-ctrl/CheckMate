@@ -86,7 +86,7 @@ export default function Receipts() {
   };
 
   return (
-    <div className="space-y-6 relative pb-20 animate-fade-in-up">
+    <div className="space-y-6 relative pb-32 animate-fade-in-up">
       <div className="flex justify-between items-center mb-2">
         <h2 className="text-3xl font-bold tracking-tight text-slate-800">Receipts</h2>
       </div>
@@ -282,7 +282,7 @@ export default function Receipts() {
 
       <button 
         onClick={openNewForm}
-        className="fixed bottom-24 right-4 w-14 h-14 bg-gradient-to-br from-rose-500 to-rose-600 text-white rounded-full shadow-lg shadow-rose-500/40 flex items-center justify-center hover:scale-105 transition-all tap-effect z-20"
+        className="fixed bottom-20 right-4 w-14 h-14 bg-gradient-to-br from-rose-500 to-rose-600 text-white rounded-full shadow-lg shadow-rose-500/40 flex items-center justify-center hover:scale-105 transition-all tap-effect z-20"
       >
         <Plus className="w-7 h-7" strokeWidth={2.5} />
       </button>

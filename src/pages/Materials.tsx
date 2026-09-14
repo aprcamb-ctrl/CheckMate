@@ -84,7 +84,7 @@ export default function Materials() {
   };
 
   return (
-    <div className="space-y-6 relative pb-20 animate-fade-in-up">
+    <div className="space-y-6 relative pb-32 animate-fade-in-up">
       <div className="flex justify-between items-center mb-2">
         <h2 className="text-3xl font-bold tracking-tight text-slate-800">Materials</h2>
       </div>
@@ -201,8 +201,8 @@ export default function Materials() {
         </div>
       ) : (
         <button 
-          onClick={() => handleOpenForm()}
-          className="fixed bottom-24 right-4 w-14 h-14 bg-gradient-to-br from-primary-500 to-primary-600 text-white rounded-full shadow-lg shadow-primary-500/40 flex items-center justify-center hover:scale-105 transition-all tap-effect z-20"
+          onClick={() => setIsFormOpen(true)}
+          className="fixed bottom-20 right-4 w-14 h-14 bg-gradient-to-br from-indigo-500 to-indigo-600 text-white rounded-full shadow-lg shadow-indigo-500/40 flex items-center justify-center hover:scale-105 transition-all tap-effect z-20"
         >
           <Plus className="w-7 h-7" strokeWidth={2.5} />
         </button>
