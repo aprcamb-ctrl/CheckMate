@@ -53,6 +53,7 @@ export interface Event {
   name: string;
   date?: string;
   createdAt: string;
+  isCompleted?: boolean;
 }
 
 export interface Receipt {
@@ -98,6 +99,7 @@ interface AppState {
   deleteEquipment: (id: string) => void;
   addEvent: (name: string, date?: string) => void;
   deleteEvent: (id: string) => void;
+  toggleEventCompleted: (id: string) => void;
   addReceipt: (photoBase64: string, description: string, amount: number, jobId?: string) => void;
   updateReceipt: (id: string, description: string, amount: number, jobId?: string) => void;
   toggleReceiptPaid: (id: string) => void;
@@ -316,6 +318,10 @@ export const useStore = create<AppState>()(
 
       deleteEvent: (id) => set((state) => ({
         events: state.events.filter(e => e.id !== id)
+      })),
+
+      toggleEventCompleted: (id) => set((state) => ({
+        events: state.events.map(e => e.id === id ? { ...e, isCompleted: !e.isCompleted } : e)
       })),
 
       addReceipt: (photoBase64, description, amount, jobId) => set((state) => ({

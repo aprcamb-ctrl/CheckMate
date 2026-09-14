@@ -5,8 +5,9 @@ import VoiceInput from '../components/ui/VoiceInput';
 import { useNavigate } from 'react-router-dom';
 
 export default function Events() {
-  const { events, addEvent, deleteEvent, jobs } = useStore();
+  const { events, addEvent, deleteEvent, toggleEventCompleted, jobs } = useStore();
   const [search, setSearch] = useState('');
+  const [filter, setFilter] = useState<'All' | 'Upcoming' | 'Completed'>('All');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [newName, setNewName] = useState('');
   const [newDate, setNewDate] = useState('');
@@ -15,8 +16,12 @@ export default function Events() {
   const navigate = useNavigate();
 
   const filtered = useMemo(() => {
-    return events.filter(e => e.name.toLowerCase().includes(search.toLowerCase()) || e.id.toLowerCase().includes(search.toLowerCase()));
-  }, [events, search]);
+    let result = events;
+    if (filter === 'Completed') result = result.filter(e => e.isCompleted);
+    else if (filter === 'Upcoming') result = result.filter(e => !e.isCompleted);
+    
+    return result.filter(e => e.name.toLowerCase().includes(search.toLowerCase()) || e.id.toLowerCase().includes(search.toLowerCase()));
+  }, [events, search, filter]);
 
   const handleSave = () => {
     if (newName.trim()) {
@@ -36,6 +41,18 @@ export default function Events() {
     <div className="space-y-6 relative pb-20 animate-fade-in-up">
       <div className="flex justify-between items-center mb-2">
         <h2 className="text-3xl font-bold tracking-tight text-slate-800">Events</h2>
+      </div>
+
+      <div className="filter-btn-container">
+        {(['All', 'Upcoming', 'Completed'] as const).map((tab) => (
+          <button 
+            key={tab}
+            onClick={() => setFilter(tab)}
+            className={`filter-btn ${filter === tab ? 'filter-btn-active' : ''}`}
+          >
+            {tab}
+          </button>
+        ))}
       </div>
 
       <div className="glass-panel p-2 flex items-center gap-3">
@@ -71,11 +88,17 @@ export default function Events() {
       )}
 
       {selectedEvent && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in">
-          <div className="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-in fade-in"
+          onClick={() => setSelectedEvent(null)}
+        >
+          <div 
+            className="bg-white dark:bg-slate-800 rounded-3xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+            onClick={e => e.stopPropagation()}
+          >
             <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-900">
               <h3 className="font-bold text-lg text-slate-800 dark:text-white">Event Details</h3>
-              <button onClick={() => setSelectedEvent(null)} className="p-1 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 tap-effect">
+              <button onClick={(e) => { e.stopPropagation(); setSelectedEvent(null); }} className="p-1 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 tap-effect z-10">
                 <X className="w-6 h-6 text-slate-500" />
               </button>
             </div>
@@ -138,15 +161,16 @@ export default function Events() {
         {filtered.map(ev => (
           <div 
             key={ev.id} 
-            onClick={() => setSelectedEvent(ev)}
             className="glass-panel p-4 flex items-center justify-between hover-lift cursor-pointer border-l-4 border-l-indigo-400"
           >
-            <div className="flex items-center gap-4">
-              <div className="bg-indigo-50 text-indigo-500 p-3 rounded-2xl shadow-inner">
+            <div className="flex items-center gap-4 flex-1" onClick={() => setSelectedEvent(ev)}>
+              <div className="bg-indigo-50 text-indigo-500 p-3 rounded-2xl shadow-inner flex-shrink-0">
                 <CalendarDays className="w-5 h-5" />
               </div>
-              <div>
-                <h3 className="font-bold text-slate-800 text-lg leading-tight">{ev.name}</h3>
+              <div className="flex-1">
+                <h3 className={`font-bold text-lg leading-tight ${ev.isCompleted ? 'line-through text-slate-400' : 'text-slate-800'}`}>
+                  {ev.name}
+                </h3>
                 <div className="flex gap-2 text-xs font-medium mt-1">
                   {ev.date ? (
                     <span className="text-slate-500">{new Date(ev.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}</span>
@@ -158,6 +182,15 @@ export default function Events() {
                 </div>
               </div>
             </div>
+            
+            <button 
+              onClick={(e) => { e.stopPropagation(); toggleEventCompleted(ev.id); }}
+              className={`p-2 rounded-full border-2 tap-effect flex-shrink-0 ml-3 ${ev.isCompleted ? 'bg-emerald-500 border-emerald-500' : 'border-slate-300 hover:border-emerald-400'}`}
+            >
+              <svg className={`w-4 h-4 ${ev.isCompleted ? 'text-white' : 'text-transparent'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+              </svg>
+            </button>
           </div>
         ))}
         {filtered.length === 0 && !isFormOpen && (
