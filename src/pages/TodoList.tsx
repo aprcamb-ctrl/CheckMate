@@ -16,6 +16,7 @@ export default function TodoList() {
   const [recurring, setRecurring] = useState<RecurringSchedule>('NONE');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [search, setSearch] = useState('');
+  const [filter, setFilter] = useState<'All' | 'Completed' | 'Pending'>('All');
   const [equipmentId, setEquipmentId] = useState<string>('');
   const [eventId, setEventId] = useState<string>('');
 
@@ -35,7 +36,20 @@ export default function TodoList() {
   
   const filteredJobs = useMemo(() => {
     // Only show unassigned jobs in the main Todo list
-    const unassignedJobs = jobs.filter(j => !j.equipmentId && !j.eventId);
+    let unassignedJobs = jobs.filter(j => !j.equipmentId && !j.eventId);
+
+    if (filter === 'Completed') {
+      unassignedJobs = unassignedJobs.filter(j => j.status === 'COMPLETED');
+    } else if (filter === 'Pending') {
+      unassignedJobs = unassignedJobs.filter(j => j.status !== 'COMPLETED');
+    }
+
+    // Sort by status (pending first, then completed)
+    unassignedJobs = [...unassignedJobs].sort((a, b) => {
+      if (a.status === 'COMPLETED' && b.status !== 'COMPLETED') return 1;
+      if (a.status !== 'COMPLETED' && b.status === 'COMPLETED') return -1;
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
 
     if (!search.trim()) return unassignedJobs;
     
@@ -91,8 +105,20 @@ export default function TodoList() {
 
   return (
     <div className="space-y-4 relative pb-20">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold text-slate-800">Job List</h2>
+      <div className="flex justify-between items-center mb-2">
+        <h2 className="text-3xl font-bold tracking-tight text-slate-800">Job List</h2>
+      </div>
+
+      <div className="glass-panel p-1.5 flex gap-1 bg-white/40">
+        {(['All', 'Completed', 'Pending'] as const).map((tab) => (
+          <button 
+            key={tab}
+            onClick={() => setFilter(tab)}
+            className={`flex-1 py-2 text-sm font-semibold rounded-2xl transition-all ${filter === tab ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'}`}
+          >
+            {tab}
+          </button>
+        ))}
       </div>
 
       <div className="glass-panel p-2 flex items-center justify-between mb-6">

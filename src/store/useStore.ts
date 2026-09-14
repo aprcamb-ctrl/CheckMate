@@ -32,6 +32,7 @@ export interface Material {
   name: string;
   qty: number | string;
   price: number;
+  isPurchased?: boolean;
 }
 
 export interface MaterialUsage {
@@ -89,6 +90,7 @@ interface AppState {
   deleteMaterial: (id: string) => void;
   deleteMaterials: (ids: string[]) => void;
   toggleDeletingMaterials: (value: boolean) => void;
+  toggleMaterialPurchased: (id: string) => void;
   assignMaterialToJob: (jobId: string, materialId: string, quantity: number) => void;
   addPhotoToJob: (jobId: string, photoBase64: string, type: 'before' | 'after') => void;
   addEquipment: (name: string, location: string) => void;
@@ -259,6 +261,10 @@ export const useStore = create<AppState>()(
 
       toggleDeletingMaterials: (value) => set(() => ({
         isDeletingMaterials: value
+      })),
+
+      toggleMaterialPurchased: (id) => set((state) => ({
+        materials: state.materials.map(m => m.id === id ? { ...m, isPurchased: !m.isPurchased } : m)
       })),
 
       deleteJobs: (ids) => set((state) => ({

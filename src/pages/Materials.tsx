@@ -1,11 +1,12 @@
-import { Plus, Search, Layers, X } from 'lucide-react';
+import { Plus, Search, Layers, X, CheckCircle, Circle } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { useState, useMemo } from 'react';
 import VoiceInput from '../components/ui/VoiceInput';
 
 export default function Materials() {
-  const { materials, addMaterial, updateMaterial, isDeletingMaterials, toggleDeletingMaterials, deleteMaterials } = useStore();
+  const { materials, addMaterial, updateMaterial, isDeletingMaterials, toggleDeletingMaterials, deleteMaterials, toggleMaterialPurchased } = useStore();
   const [search, setSearch] = useState('');
+  const [filter, setFilter] = useState<'All' | 'Purchased' | 'Pending'>('All');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   
   // Add/Edit State
@@ -16,8 +17,14 @@ export default function Materials() {
   const [newPrice, setNewPrice] = useState('');
 
   const filteredMaterials = useMemo(() => {
-    return materials.filter(m => m.name.toLowerCase().includes(search.toLowerCase()));
-  }, [materials, search]);
+    let filtered = materials.filter(m => m.name.toLowerCase().includes(search.toLowerCase()));
+    if (filter === 'Purchased') {
+      filtered = filtered.filter(m => m.isPurchased);
+    } else if (filter === 'Pending') {
+      filtered = filtered.filter(m => !m.isPurchased);
+    }
+    return filtered;
+  }, [materials, search, filter]);
 
   const handleOpenForm = (mat?: any) => {
     if (mat) {
@@ -73,6 +80,18 @@ export default function Materials() {
         <h2 className="text-3xl font-bold tracking-tight text-slate-800">Materials</h2>
       </div>
 
+      <div className="glass-panel p-1.5 flex gap-1 bg-white/40">
+        {(['All', 'Purchased', 'Pending'] as const).map((tab) => (
+          <button 
+            key={tab}
+            onClick={() => setFilter(tab)}
+            className={`flex-1 py-2 text-sm font-semibold rounded-2xl transition-all ${filter === tab ? 'bg-white shadow-sm text-slate-800' : 'text-slate-500 hover:text-slate-700'}`}
+          >
+            {tab}
+          </button>
+        ))}
+      </div>
+
       {/* Search Bar */}
       <div className="glass-panel p-2 flex items-center gap-3">
         <Search className="w-5 h-5 text-slate-400 ml-2" />
@@ -109,15 +128,35 @@ export default function Materials() {
             onClick={() => handleMaterialClick(mat)}
             className={`glass-panel p-4 flex items-center justify-between hover-lift cursor-pointer ${isDeletingMaterials && selectedIds.includes(mat.id) ? 'border-red-500 bg-red-50 dark:bg-red-900/20' : ''}`}
           >
-            <div className="flex items-center gap-4">
-              <div className="bg-gradient-to-tr from-slate-200 to-slate-100 p-3 rounded-2xl text-slate-500 shadow-inner">
+            <div className="flex items-center gap-3">
+              {!isDeletingMaterials && (
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleMaterialPurchased(mat.id);
+                  }}
+                  className="flex-shrink-0 focus:outline-none tap-effect"
+                >
+                  {mat.isPurchased ? (
+                    <CheckCircle className="w-6 h-6 text-emerald-500" />
+                  ) : (
+                    <Circle className="w-6 h-6 text-slate-300" />
+                  )}
+                </button>
+              )}
+              <div className="bg-gradient-to-tr from-slate-200 to-slate-100 p-2.5 rounded-xl text-slate-500 shadow-inner hidden sm:block">
                 <Layers className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="font-semibold text-slate-800">{mat.name}</h3>
-                <div className="flex gap-3 text-sm text-slate-500 font-medium mt-0.5">
+                <h3 className={`font-semibold text-slate-800 ${mat.isPurchased ? 'line-through text-slate-500' : ''}`}>{mat.name}</h3>
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-500 font-medium mt-0.5">
                   <span>Stock: <span className="text-slate-700">{mat.qty}</span></span>
                   <span>Price: <span className="text-emerald-600">£{(mat.price || 0).toFixed(2)}</span></span>
+                  {mat.isPurchased && (
+                    <span className="text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100 text-[10px] uppercase tracking-wider font-bold">
+                      Purchased
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
