@@ -36,9 +36,9 @@ export default function AppLayout() {
   ];
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col h-[100dvh] overflow-hidden bg-slate-50/50 dark:bg-slate-900/50">
       {/* Glass Header */}
-      <header className="glass-header text-slate-800 p-4 sticky top-0 z-20 flex justify-between items-center">
+      <header className="glass-header text-slate-800 p-4 flex-shrink-0 z-20 flex justify-between items-center">
         <div className="flex items-center gap-2">
           <img src="/icon.jpg" alt="CheckMate Logo" className="w-8 h-8 rounded-lg shadow-sm object-cover" />
           <h1 className="text-xl font-bold tracking-tight bg-gradient-to-r from-primary-600 to-indigo-500 bg-clip-text text-transparent">
@@ -88,12 +88,12 @@ export default function AppLayout() {
       </header>
 
       {/* Main Content Area */}
-      <main className="flex-1 p-4 pb-24 relative z-0">
+      <main className="flex-1 overflow-y-auto relative z-0 hide-scrollbar p-4 pb-20">
         <Outlet />
       </main>
 
       {/* Glass Bottom Navigation */}
-      <nav className="glass-nav fixed bottom-0 w-full z-20 pb-safe">
+      <nav className="glass-nav flex-shrink-0 z-20 pb-safe">
         <ul className="flex justify-around items-center h-[72px] px-2">
           {navItems.map(({ to, icon: Icon, label }) => (
             <li key={to} className="w-full h-full">

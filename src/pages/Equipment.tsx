@@ -66,32 +66,34 @@ export default function Equipment() {
   }, [selectedEq, jobs]);
 
   return (
-    <div className="space-y-6 relative pb-32 animate-fade-in-up">
-      <div className="flex justify-between items-center mb-2">
-        <h2 className="text-3xl font-bold tracking-tight text-slate-800">Equipment</h2>
-      </div>
+    <div className="relative pb-32 animate-fade-in-up">
+      <div className="sticky top-0 z-10 -mx-4 -mt-4 p-4 pb-4 bg-slate-50/95 dark:bg-slate-900/95 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-700/50 mb-4 shadow-sm">
+        <div className="flex justify-between items-center mb-3">
+          <h2 className="text-3xl font-bold tracking-tight text-slate-800">Equipment</h2>
+        </div>
 
-      <div className="filter-btn-container">
-        {(['All', 'Operational', 'Repair'] as const).map((tab) => (
-          <button 
-            key={tab}
-            onClick={() => setFilter(tab)}
-            className={`filter-btn ${filter === tab ? 'filter-btn-active' : ''}`}
-          >
-            {tab}
-          </button>
-        ))}
-      </div>
+        <div className="filter-btn-container mb-3">
+          {(['All', 'Operational', 'Repair'] as const).map((tab) => (
+            <button 
+              key={tab}
+              onClick={() => setFilter(tab)}
+              className={`filter-btn ${filter === tab ? 'filter-btn-active' : ''}`}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
 
-      {/* Search Bar */}
-      <div className="glass-panel p-2 flex items-center gap-3">
-        <Search className="w-5 h-5 text-slate-400 ml-2" />
-        <VoiceInput 
-          value={search}
-          onValueChange={setSearch}
-          placeholder="Search by name or ID..." 
-          className="bg-transparent border-none outline-none py-1 text-slate-700 placeholder-slate-400"
-        />
+        {/* Search Bar */}
+        <div className="glass-panel p-2 flex items-center gap-3">
+          <Search className="w-5 h-5 text-slate-400 ml-2" />
+          <VoiceInput 
+            value={search}
+            onValueChange={setSearch}
+            placeholder="Search by name or ID..." 
+            className="bg-transparent border-none outline-none py-1 text-slate-700 placeholder-slate-400"
+          />
+        </div>
       </div>
 
       {isFormOpen && (
