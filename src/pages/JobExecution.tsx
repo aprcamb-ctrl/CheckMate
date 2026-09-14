@@ -7,7 +7,7 @@ export default function JobExecution() {
   const { id } = useParams();
   const navigate = useNavigate();
   
-  const { jobs, materials, receipts, startJob, pauseJob, completeJob, assignMaterialToJob, addPhotoToJob, overrideJobTime } = useStore();
+  const { jobs, materials, receipts, startJob, pauseJob, completeJob, assignMaterialToJob, addPhotoToJob, overrideJobTime, updateJobReminderInterval } = useStore();
   const job = jobs.find(j => j.id === id);
   const jobReceipts = receipts.filter(r => r.jobId === id);
   const [showMaterialsModal, setShowMaterialsModal] = useState(false);
@@ -15,6 +15,8 @@ export default function JobExecution() {
   const [editHours, setEditHours] = useState('0');
   const [editMinutes, setEditMinutes] = useState('0');
   const [elapsed, setElapsed] = useState(0);
+  const [reminderMinutes, setReminderMinutes] = useState<number>(job?.reminderInterval || 0);
+  const lastReminderRef = useRef<number>(0);
   const [photoTab, setPhotoTab] = useState<'before'|'after'>('before');
   const fileInputRef = useRef<HTMLInputElement>(null);
   
@@ -55,15 +57,37 @@ export default function JobExecution() {
 
     setElapsed(calcElapsed());
 
+    if (job.reminderInterval) {
+      lastReminderRef.current = Math.floor(calcElapsed() / (job.reminderInterval * 60));
+    }
+
     let interval: any;
     if (isRunning) {
       interval = setInterval(() => {
-        setElapsed(calcElapsed());
+        const newElapsed = calcElapsed();
+        setElapsed(newElapsed);
+
+        if (reminderMinutes > 0) {
+          const reminderSeconds = reminderMinutes * 60;
+          const intervalsPassed = Math.floor(newElapsed / reminderSeconds);
+          
+          if (intervalsPassed > 0 && intervalsPassed > lastReminderRef.current) {
+            lastReminderRef.current = intervalsPassed;
+            if ('Notification' in window && Notification.permission === 'granted') {
+              new Notification('CheckMate Reminder', { 
+                body: `Job "${job.title}" has been running for ${intervalsPassed * reminderMinutes} minutes. Don't forget to pause or complete it!`,
+                icon: '/icon.jpg'
+              });
+            } else {
+              alert(`Reminder: Job "${job.title}" has been running for ${intervalsPassed * reminderMinutes} minutes. Don't forget to pause or complete it!`);
+            }
+          }
+        }
       }, 1000);
     }
     
     return () => clearInterval(interval);
-  }, [job, isRunning]);
+  }, [job, isRunning, reminderMinutes]);
 
   const formatTime = (seconds: number) => {
     const h = Math.floor(seconds / 3600);
@@ -93,7 +117,22 @@ export default function JobExecution() {
   const handleSaveEditTime = () => {
     const totalSeconds = parseInt(editHours || '0') * 3600 + parseInt(editMinutes || '0') * 60;
     overrideJobTime(job.id, totalSeconds);
+    if (reminderMinutes > 0) {
+      lastReminderRef.current = Math.floor(totalSeconds / (reminderMinutes * 60));
+    }
     setShowEditTime(false);
+  };
+  
+  const handleReminderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const mins = Number(e.target.value);
+    setReminderMinutes(mins);
+    updateJobReminderInterval(job.id, mins);
+    if (mins > 0) {
+      lastReminderRef.current = Math.floor(elapsed / (mins * 60));
+      if ('Notification' in window && Notification.permission !== 'granted' && Notification.permission !== 'denied') {
+        Notification.requestPermission();
+      }
+    }
   };
   
   return (
@@ -139,6 +178,24 @@ export default function JobExecution() {
             Elapsed Time
             {job.status === 'COMPLETED' && <span className="text-emerald-500 lowercase">(completed)</span>}
           </span>
+          
+          {/* Reminder Dropdown */}
+          {job.status !== 'COMPLETED' && (
+            <div className="mt-4 flex items-center gap-2 bg-slate-50 dark:bg-slate-800/50 px-4 py-2 rounded-full border border-slate-100 dark:border-slate-700">
+              <label className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Reminder:</label>
+              <select 
+                value={reminderMinutes} 
+                onChange={handleReminderChange}
+                className="bg-transparent text-sm font-bold text-primary-600 outline-none border-none cursor-pointer hover:text-primary-700 transition-colors"
+              >
+                <option value={0} className="text-slate-800">Off</option>
+                <option value={15} className="text-slate-800">Every 15 mins</option>
+                <option value={30} className="text-slate-800">Every 30 mins</option>
+                <option value={45} className="text-slate-800">Every 45 mins</option>
+                <option value={60} className="text-slate-800">Every 1 hour</option>
+              </select>
+            </div>
+          )}
         </div>
       </div>
 

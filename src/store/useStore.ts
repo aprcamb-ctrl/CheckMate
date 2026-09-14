@@ -22,6 +22,7 @@ export interface Job {
   completedAt?: string;
   reminder?: boolean;
   reminderDate?: string;
+  reminderInterval?: number;
   recurringSchedule?: RecurringSchedule;
   equipmentId?: string;
   eventId?: string;
@@ -80,6 +81,7 @@ interface AppState {
   // Actions
   addJob: (title: string, reminder?: boolean, reminderDate?: string, recurringSchedule?: RecurringSchedule, equipmentId?: string, eventId?: string) => void;
   updateJobStatus: (id: string, status: JobStatus) => void;
+  updateJobReminderInterval: (id: string, interval: number) => void;
   startJob: (id: string) => void;
   pauseJob: (id: string) => void;
   completeJob: (id: string) => void;
@@ -155,6 +157,10 @@ export const useStore = create<AppState>()(
 
       updateJobStatus: (id, status) => set((state) => ({
         jobs: state.jobs.map(j => j.id === id ? { ...j, status } : j)
+      })),
+
+      updateJobReminderInterval: (id, interval) => set((state) => ({
+        jobs: state.jobs.map(j => j.id === id ? { ...j, reminderInterval: interval } : j)
       })),
 
       startJob: (id) => set((state) => ({
