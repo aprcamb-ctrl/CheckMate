@@ -26,6 +26,9 @@ export interface Job {
   recurringSchedule?: RecurringSchedule;
   equipmentId?: string;
   eventId?: string;
+  priority?: 'None' | 'Low' | 'Med' | 'High';
+  prepTimeHours?: number;
+  prepTimeDescription?: string;
 }
 
 export interface Material {
@@ -81,6 +84,8 @@ interface AppState {
   // Actions
   addJob: (title: string, reminder?: boolean, reminderDate?: string, recurringSchedule?: RecurringSchedule, equipmentId?: string, eventId?: string) => void;
   updateJobStatus: (id: string, status: JobStatus) => void;
+  updateJobPriority: (id: string, priority: 'None' | 'Low' | 'Med' | 'High') => void;
+  updateJobPrepTime: (id: string, hours: number, description: string) => void;
   updateJobReminderInterval: (id: string, interval: number) => void;
   startJob: (id: string) => void;
   pauseJob: (id: string) => void;
@@ -157,6 +162,14 @@ export const useStore = create<AppState>()(
 
       updateJobStatus: (id, status) => set((state) => ({
         jobs: state.jobs.map(j => j.id === id ? { ...j, status } : j)
+      })),
+
+      updateJobPriority: (id, priority) => set((state) => ({
+        jobs: state.jobs.map(j => j.id === id ? { ...j, priority } : j)
+      })),
+
+      updateJobPrepTime: (id, hours, description) => set((state) => ({
+        jobs: state.jobs.map(j => j.id === id ? { ...j, prepTimeHours: hours, prepTimeDescription: description } : j)
       })),
 
       updateJobReminderInterval: (id, interval) => set((state) => ({

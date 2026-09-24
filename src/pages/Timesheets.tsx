@@ -1,4 +1,4 @@
-import { Clock, Calendar, Download, FileText } from 'lucide-react';
+import { Clock, Calendar, Download, FileText, Mail } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { useMemo, useState } from 'react';
 
@@ -36,13 +36,17 @@ export default function Timesheets() {
     return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
   };
 
-  const totalSeconds = completedJobs.reduce((sum, job) => sum + calculateElapsedSeconds(job.timeLogs), 0);
+  const totalSeconds = completedJobs.reduce((sum, job) => {
+    return sum + calculateElapsedSeconds(job.timeLogs) + (job.prepTimeHours || 0) * 3600;
+  }, 0);
 
   const exportTimesheets = () => {
     let csv = '\uFEFF' + "Job Title,Status,Created At,Completed At,Total Hours\n";
     completedJobs.forEach(job => {
-      const hours = (calculateElapsedSeconds(job.timeLogs) / 3600).toFixed(2);
-      csv += `"${job.title}","${job.status}","${new Date(job.createdAt).toLocaleString('en-GB')}","${job.completedAt ? new Date(job.completedAt).toLocaleString('en-GB') : ''}","${hours}"\n`;
+      const execHours = calculateElapsedSeconds(job.timeLogs) / 3600;
+      const prepHours = job.prepTimeHours || 0;
+      const totalHours = (execHours + prepHours).toFixed(2);
+      csv += `"${job.title}","${job.status}","${new Date(job.createdAt).toLocaleString('en-GB')}","${job.completedAt ? new Date(job.completedAt).toLocaleString('en-GB') : ''}","${totalHours}"\n`;
     });
     
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -50,6 +54,41 @@ export default function Timesheets() {
     link.href = URL.createObjectURL(blob);
     link.download = "timesheets_export.csv";
     link.click();
+  };
+
+  const emailTimesheets = async () => {
+    let body = "\r\n\r\n=== Timesheets Summary ===\r\n\r\n";
+    let csv = '\uFEFF' + "Job Title,Status,Created At,Completed At,Total Hours\n";
+    
+    completedJobs.forEach(job => {
+      const execHours = calculateElapsedSeconds(job.timeLogs) / 3600;
+      const prepHours = job.prepTimeHours || 0;
+      const totalHours = (execHours + prepHours).toFixed(2);
+      
+      body += `Job: ${job.title}\nCompleted: ${job.completedAt ? new Date(job.completedAt).toLocaleString('en-GB') : 'N/A'}\nTotal Hours: ${totalHours}\n\n`;
+      csv += `"${job.title}","${job.status}","${new Date(job.createdAt).toLocaleString('en-GB')}","${job.completedAt ? new Date(job.completedAt).toLocaleString('en-GB') : ''}","${totalHours}"\n`;
+    });
+    
+    const subject = "Timesheets Summary";
+    
+    try {
+      const file = new File([csv], 'timesheets_export.csv', { type: 'text/csv' });
+      // Use Web Share API if supported
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          title: subject,
+          text: body,
+          files: [file]
+        });
+      } else {
+        // Fallback to mailto link (cannot attach files automatically)
+        alert("Your browser/device doesn't support automatic file attachments via email. A summary will be opened instead.");
+        const mailtoBody = encodeURIComponent(body + "\n\n(See downloaded CSV for full details)");
+        window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${mailtoBody}`;
+      }
+    } catch (err) {
+      console.error("Error sharing:", err);
+    }
   };
 
   const exportWorksheet = (job: any) => {
@@ -65,7 +104,20 @@ export default function Timesheets() {
         csv += `"${new Date(log.startedAt).toLocaleString('en-GB')}","${new Date(log.endedAt).toLocaleString('en-GB')}","${duration}"\n`;
       }
     });
-    csv += `Total Time,,"${(calculateElapsedSeconds(job.timeLogs) / 3600).toFixed(2)}"\n\n`;
+    
+    const execHours = calculateElapsedSeconds(job.timeLogs) / 3600;
+    csv += `Execution Time,,"${execHours.toFixed(2)}"\n`;
+    
+    const prepHours = job.prepTimeHours || 0;
+    if (prepHours > 0) {
+      csv += `Prep Time,,"${prepHours.toFixed(2)}"\n`;
+      if (job.prepTimeDescription) {
+        csv += `Prep Description,,"${job.prepTimeDescription.replace(/"/g, '""')}"\n`;
+      }
+    }
+    
+    const totalHours = execHours + prepHours;
+    csv += `Total Time,,"${totalHours.toFixed(2)}"\n\n`;
 
     csv += `Materials Used\n`;
     csv += `Item,Quantity,Unit Price,Total Cost\n`;
@@ -95,12 +147,22 @@ export default function Timesheets() {
     <div className="space-y-6 pb-20">
       <div className="flex justify-between items-center mb-2">
         <h2 className="text-3xl font-bold tracking-tight text-slate-800">Timesheets</h2>
-        <button 
-          onClick={exportTimesheets}
-          className="text-primary-600 bg-primary-50 p-2.5 rounded-full hover:bg-primary-100 transition-colors tap-effect shadow-sm"
-        >
-          <Download className="w-5 h-5" />
-        </button>
+        <div className="flex items-center gap-2">
+          <button 
+            onClick={emailTimesheets}
+            className="text-indigo-600 bg-indigo-50 p-2.5 rounded-full hover:bg-indigo-100 transition-colors tap-effect shadow-sm"
+            title="Email Timesheets"
+          >
+            <Mail className="w-5 h-5" />
+          </button>
+          <button 
+            onClick={exportTimesheets}
+            className="text-primary-600 bg-primary-50 p-2.5 rounded-full hover:bg-primary-100 transition-colors tap-effect shadow-sm"
+            title="Download CSV"
+          >
+            <Download className="w-5 h-5" />
+          </button>
+        </div>
       </div>
 
       {/* Date Toggle */}
@@ -131,7 +193,9 @@ export default function Timesheets() {
         <h4 className="font-bold text-slate-800 px-1 mt-6">Completed Jobs</h4>
         
         {completedJobs.map(job => {
-          const seconds = calculateElapsedSeconds(job.timeLogs);
+          const execSeconds = calculateElapsedSeconds(job.timeLogs);
+          const prepSeconds = (job.prepTimeHours || 0) * 3600;
+          const totalJobSeconds = execSeconds + prepSeconds;
           return (
             <div key={job.id} className="glass-panel p-4 flex flex-col gap-3 hover-lift">
               <div className="flex items-center justify-between">
@@ -144,7 +208,7 @@ export default function Timesheets() {
                     <p className="text-sm text-slate-500">{job.completedAt ? new Date(job.completedAt).toLocaleDateString('en-GB') : 'Unknown'}</p>
                   </div>
                 </div>
-                <span className="font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full">{formatTime(seconds)}</span>
+                <span className="font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full">{formatTime(totalJobSeconds)}</span>
               </div>
               
               <div className="flex justify-end border-t border-slate-100 pt-3 mt-1">
