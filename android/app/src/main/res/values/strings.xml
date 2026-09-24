@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">checkmate</string>
+    <string name="title_activity_main">checkmate</string>
+    <string name="package_name">com.aprcamb.checkmate</string>
+    <string name="custom_url_scheme">com.aprcamb.checkmate</string>
+</resources>

@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Play, Pause, CheckCircle2, Image as ImageIcon, Layers, Plus, X, Edit3, ReceiptPoundSterling } from 'lucide-react';
+import { ArrowLeft, Play, Pause, CheckCircle2, Image as ImageIcon, Layers, Plus, X, Edit3, ReceiptPoundSterling, AlertCircle, Clock } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { useState, useRef, useEffect } from 'react';
 
@@ -7,7 +7,7 @@ export default function JobExecution() {
   const { id } = useParams();
   const navigate = useNavigate();
   
-  const { jobs, materials, receipts, startJob, pauseJob, completeJob, assignMaterialToJob, addPhotoToJob, overrideJobTime, updateJobReminderInterval } = useStore();
+  const { jobs, materials, receipts, startJob, pauseJob, completeJob, assignMaterialToJob, addPhotoToJob, overrideJobTime, updateJobReminderInterval, updateJobPriority, updateJobPrepTime } = useStore();
   const job = jobs.find(j => j.id === id);
   const jobReceipts = receipts.filter(r => r.jobId === id);
   const [showMaterialsModal, setShowMaterialsModal] = useState(false);
@@ -228,6 +228,57 @@ export default function JobExecution() {
       <div className="space-y-3">
         <h4 className="font-bold text-slate-800 text-lg px-1">Job Utilities</h4>
         
+        <div className="w-full glass-panel p-4 flex items-center justify-between group">
+          <div className="flex items-center gap-4">
+            <div className="bg-gradient-to-br from-amber-400 to-orange-500 text-white p-2.5 rounded-xl shadow-md">
+              <AlertCircle className="w-5 h-5" />
+            </div>
+            <span className="font-semibold text-slate-700">Priority</span>
+          </div>
+          <select 
+            value={job.priority || 'None'}
+            onChange={(e) => updateJobPriority(job.id, e.target.value as any)}
+            className="bg-slate-50 border border-slate-200 text-slate-700 font-bold py-2 px-3 rounded-lg focus:outline-none focus:border-primary-500 cursor-pointer"
+          >
+            <option value="None">None</option>
+            <option value="Low">Low</option>
+            <option value="Med">Med</option>
+            <option value="High">High</option>
+          </select>
+        </div>
+
+        {/* Prep Time Section */}
+        <div className="w-full glass-panel p-4 flex flex-col gap-3 group">
+          <div className="flex items-center gap-4 mb-1">
+            <div className="bg-gradient-to-br from-blue-400 to-indigo-500 text-white p-2.5 rounded-xl shadow-md">
+              <Clock className="w-5 h-5" />
+            </div>
+            <span className="font-semibold text-slate-700">Prep Time</span>
+          </div>
+          <div className="flex gap-2">
+            <input 
+              type="text"
+              placeholder="e.g. collected materials..."
+              value={job.prepTimeDescription || ''}
+              onChange={(e) => updateJobPrepTime(job.id, job.prepTimeHours || 0, e.target.value)}
+              className="flex-1 bg-slate-50 border border-slate-200 text-slate-700 py-2 px-3 rounded-lg focus:outline-none focus:border-primary-500 text-sm"
+            />
+            <select 
+              value={job.prepTimeHours || 0}
+              onChange={(e) => updateJobPrepTime(job.id, Number(e.target.value), job.prepTimeDescription || '')}
+              className="bg-slate-50 border border-slate-200 text-slate-700 font-bold py-2 px-2 rounded-lg focus:outline-none focus:border-primary-500 cursor-pointer w-20 text-sm"
+            >
+              <option value={0}>0h</option>
+              <option value={0.5}>0.5h</option>
+              <option value={1}>1h</option>
+              <option value={2}>2h</option>
+              <option value={3}>3h</option>
+              <option value={4}>4h</option>
+              <option value={5}>5h</option>
+            </select>
+          </div>
+        </div>
+
         <button 
           onClick={() => setShowMaterialsModal(true)}
           className="w-full glass-panel p-4 flex items-center justify-between hover-lift tap-effect group"

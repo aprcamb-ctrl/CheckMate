@@ -1,4 +1,4 @@
-import { Calendar, Clock, PlayCircle, MoreVertical, Plus, X, Search } from 'lucide-react';
+import { Calendar, Clock, PlayCircle, MoreVertical, Plus, X, Search, AlertCircle } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useStore } from '../store/useStore';
 import type { RecurringSchedule } from '../store/useStore';
@@ -58,13 +58,17 @@ export default function TodoList() {
     const words = search.toLowerCase().split(/\s+/).filter(w => !stopWords.includes(w) && w.length > 1);
     
     if (words.length === 0) {
-      return unassignedJobs.filter(j => j.title.toLowerCase().includes(search.toLowerCase()));
+      return unassignedJobs.filter(j => 
+        j.title.toLowerCase().includes(search.toLowerCase()) ||
+        j.priority?.toLowerCase().includes(search.toLowerCase())
+      );
     }
     
     return unassignedJobs.filter(j => {
       const title = j.title.toLowerCase();
       return words.some(w => {
         if (title.includes(w)) return true;
+        if (j.priority?.toLowerCase() === w) return true;
         if (w === 'completed' && j.status === 'COMPLETED') return true;
         if ((w === 'pending' || w === 'paused' || w === 'todo') && j.status !== 'COMPLETED') return true;
         return false;
@@ -137,7 +141,7 @@ export default function TodoList() {
           <VoiceInput 
             value={search}
             onValueChange={setSearch}
-            placeholder="Search by title, ID or status..." 
+            placeholder="Search by title, status or priority..." 
             className="bg-transparent border-none outline-none py-1 text-slate-700 placeholder-slate-400 flex-1"
           />
           {search && (
@@ -264,6 +268,17 @@ export default function TodoList() {
                 </div>
               )}
             </div>
+            
+            {job.priority && job.priority !== 'None' && (
+              <div className={`flex items-center gap-1.5 self-start px-2 py-1 rounded-md mt-1 ${
+                job.priority === 'Low' ? 'text-emerald-600 bg-emerald-50' :
+                job.priority === 'Med' ? 'text-amber-600 bg-amber-50' :
+                'text-red-600 bg-red-50'
+              }`}>
+                <AlertCircle className="w-3.5 h-3.5" />
+                <span className="text-xs font-bold">Priority {job.priority}</span>
+              </div>
+            )}
             
             {job.status === 'PENDING' && (
               <div className="mt-2 pt-3 border-t border-slate-100 flex justify-end">
