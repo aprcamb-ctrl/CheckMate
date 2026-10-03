@@ -188,23 +188,23 @@ export default function Timesheets() {
       </div>
 
       {filter === 'Custom' && (
-        <div className="flex gap-4 items-center animate-in fade-in slide-in-from-top-2">
+        <div className="flex gap-2 items-center animate-in fade-in slide-in-from-top-2">
           <div className="flex-1">
-            <label className="block text-xs font-semibold text-slate-500 mb-1 ml-1">From</label>
+            <label className="block text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1 ml-1">From</label>
             <input 
               type="date"
               value={customStartDate}
               onChange={(e) => setCustomStartDate(e.target.value)}
-              className="w-full bg-white/80 border border-slate-200 rounded-2xl px-4 py-2.5 text-slate-700 shadow-sm focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all"
+              className="w-full bg-white/80 border border-slate-200 rounded-xl px-2 py-1.5 text-sm text-slate-700 shadow-sm focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all"
             />
           </div>
           <div className="flex-1">
-            <label className="block text-xs font-semibold text-slate-500 mb-1 ml-1">To</label>
+            <label className="block text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1 ml-1">To</label>
             <input 
               type="date"
               value={customEndDate}
               onChange={(e) => setCustomEndDate(e.target.value)}
-              className="w-full bg-white/80 border border-slate-200 rounded-2xl px-4 py-2.5 text-slate-700 shadow-sm focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all"
+              className="w-full bg-white/80 border border-slate-200 rounded-xl px-2 py-1.5 text-sm text-slate-700 shadow-sm focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all"
             />
           </div>
         </div>
