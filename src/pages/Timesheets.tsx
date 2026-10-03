@@ -4,8 +4,9 @@ import { useMemo, useState } from 'react';
 
 export default function Timesheets() {
   const { jobs, materials } = useStore();
-  const [filter, setFilter] = useState<'All Time' | 'Weekly' | 'Monthly'>('All Time');
-
+  const [filter, setFilter] = useState<'All Time' | 'Weekly' | 'Monthly' | 'Custom'>('All Time');
+  const [customStartDate, setCustomStartDate] = useState('');
+  const [customEndDate, setCustomEndDate] = useState('');
   const completedJobs = useMemo(() => {
     let filtered = jobs.filter(j => j.status === 'COMPLETED');
     
@@ -17,11 +18,19 @@ export default function Timesheets() {
       filtered = filtered.filter(j => j.completedAt && (now - new Date(j.completedAt).getTime() <= 7 * 24 * 60 * 60 * 1000));
     } else if (filter === 'Monthly') {
       filtered = filtered.filter(j => j.completedAt && (now - new Date(j.completedAt).getTime() <= 30 * 24 * 60 * 60 * 1000));
+    } else if (filter === 'Custom') {
+      filtered = filtered.filter(j => {
+        if (!j.completedAt) return false;
+        const jobDate = new Date(j.completedAt).getTime();
+        const start = customStartDate ? new Date(customStartDate).getTime() : 0;
+        const end = customEndDate ? new Date(customEndDate).getTime() + 86399999 : Infinity;
+        return jobDate >= start && jobDate <= end;
+      });
     }
     
     // Sort by most recently completed
     return filtered.sort((a, b) => new Date(b.completedAt || 0).getTime() - new Date(a.completedAt || 0).getTime());
-  }, [jobs, filter]);
+  }, [jobs, filter, customStartDate, customEndDate]);
 
   const calculateElapsedSeconds = (timeLogs: any[]) => {
     return timeLogs.reduce((total, log) => {
@@ -167,7 +176,7 @@ export default function Timesheets() {
 
       {/* Date Toggle */}
       <div className="glass-panel p-1.5 flex gap-1 bg-white/40">
-        {(['All Time', 'Weekly', 'Monthly'] as const).map((tab) => (
+        {(['All Time', 'Weekly', 'Monthly', 'Custom'] as const).map((tab) => (
           <button 
             key={tab}
             onClick={() => setFilter(tab)}
@@ -177,6 +186,30 @@ export default function Timesheets() {
           </button>
         ))}
       </div>
+
+      {filter === 'Custom' && (
+        <div className="flex gap-4 items-center animate-in fade-in slide-in-from-top-2">
+          <div className="flex-1">
+            <label className="block text-xs font-semibold text-slate-500 mb-1 ml-1">From</label>
+            <input 
+              type="date"
+              value={customStartDate}
+              onChange={(e) => setCustomStartDate(e.target.value)}
+              className="w-full bg-white/80 border border-slate-200 rounded-2xl px-4 py-2.5 text-slate-700 shadow-sm focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all"
+            />
+          </div>
+          <div className="flex-1">
+            <label className="block text-xs font-semibold text-slate-500 mb-1 ml-1">To</label>
+            <input 
+              type="date"
+              value={customEndDate}
+              onChange={(e) => setCustomEndDate(e.target.value)}
+              className="w-full bg-white/80 border border-slate-200 rounded-2xl px-4 py-2.5 text-slate-700 shadow-sm focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 outline-none transition-all"
+            />
+          </div>
+        </div>
+      )}
+
 
       {/* Summary Card */}
       <div className="glass-panel p-6 relative overflow-hidden bg-gradient-to-br from-emerald-500 to-teal-600 text-white border-none shadow-lg shadow-emerald-500/20">
