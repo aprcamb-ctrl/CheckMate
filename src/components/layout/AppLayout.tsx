@@ -1,13 +1,55 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { Home, ListTodo, Layers, Clock, Moon, Sun, Menu, Trash2, Database, DownloadCloud, UploadCloud } from 'lucide-react';
+import { Home, ListTodo, Layers, Clock, Moon, Sun, Menu, Trash2, Database, DownloadCloud, UploadCloud, RefreshCw } from 'lucide-react';
 import clsx from 'clsx';
 import { useStore } from '../../store/useStore';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 export default function AppLayout() {
   const { isDarkMode, toggleDarkMode, toggleDeletingJobs, toggleDeletingMaterials, injectTestData, clearTestData } = useStore();
   const [showMenu, setShowMenu] = useState(false);
   const navigate = useNavigate();
+
+  const pullContainer = useRef<HTMLElement>(null);
+  const [pullStartY, setPullStartY] = useState(0);
+  const [pullMoveY, setPullMoveY] = useState(0);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (pullContainer.current && pullContainer.current.scrollTop === 0) {
+      setPullStartY(e.touches[0].clientY);
+    } else {
+      setPullStartY(0);
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!pullStartY) return;
+    const y = e.touches[0].clientY;
+    const distance = y - pullStartY;
+    if (distance > 0 && distance < 150) {
+      setPullMoveY(distance);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (pullMoveY > 100) {
+      setIsRefreshing(true);
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(reg => reg.update()));
+      }
+      setTimeout(() => window.location.reload(), 500);
+    }
+    setPullStartY(0);
+    setPullMoveY(0);
+  };
+
+  const forceUpdate = () => {
+    setShowMenu(false);
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(reg => reg.update()));
+    }
+    setTimeout(() => window.location.reload(), 500);
+  };
 
   useEffect(() => {
     if (isDarkMode) {
@@ -112,6 +154,12 @@ export default function AppLayout() {
                   </button>
                   <div className="h-px bg-slate-100 dark:bg-slate-700 my-2 mx-2"></div>
                   
+                  <button onClick={forceUpdate} className="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-xl transition-colors mb-1 tap-effect">
+                    <RefreshCw className="w-4 h-4 text-primary-500" />
+                    Check for Updates
+                  </button>
+                  <div className="h-px bg-slate-100 dark:bg-slate-700 my-2 mx-2"></div>
+                  
                   <button onClick={exportData} className="w-full flex items-center gap-3 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-xl transition-colors mb-1 tap-effect">
                     <DownloadCloud className="w-4 h-4 text-primary-500" />
                     Backup Data
@@ -139,8 +187,24 @@ export default function AppLayout() {
       </header>
 
       {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto relative z-0 hide-scrollbar p-4 pb-20">
-        <Outlet />
+      <main 
+        ref={pullContainer}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        className="flex-1 overflow-y-auto relative z-0 hide-scrollbar p-4 pb-20"
+      >
+        <div 
+          className="absolute top-0 left-0 right-0 flex justify-center items-center overflow-hidden transition-all duration-200"
+          style={{ height: `${pullMoveY}px`, opacity: pullMoveY / 100 }}
+        >
+          <div className="bg-white dark:bg-slate-800 p-2 rounded-full shadow-md flex items-center justify-center">
+            <RefreshCw className={clsx("w-5 h-5 text-primary-500", (isRefreshing || pullMoveY > 100) && "animate-spin")} />
+          </div>
+        </div>
+        <div style={{ transform: `translateY(${pullMoveY}px)`, transition: pullMoveY === 0 ? 'transform 0.3s ease-out' : 'none' }}>
+          <Outlet />
+        </div>
       </main>
 
       {/* Glass Bottom Navigation */}
